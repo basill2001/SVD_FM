@@ -61,7 +61,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,help='name of s
 
 args = parser.parse_args("")
 
-
+print("Hello World")
 
 
 def getdata(args):
