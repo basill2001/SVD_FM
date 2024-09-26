@@ -36,7 +36,7 @@ class Preprocessor:
 
     def get_user_item_info(self):
 
-        return self.user_info,self.item_info
+        return self.user_info, self.item_info
 
     def get_catcont_train(self):
         """
@@ -57,7 +57,7 @@ class Preprocessor:
         Method to get the column information
         :return: Column information
         """
-        return self.cat_columns_temp,self.cont_columns_temp
+        return self.cat_columns_temp, self.cont_columns_temp
     
     def get_embedding(self):
 
@@ -91,10 +91,8 @@ class Preprocessor:
         # merge item_info and user_info => 나중에 merge하는 작업은 밑에 있는 embedding merge에서 하는걸로 처리해주기
         ns_sampled_df = ns_sampled_df.merge(self.item_info, on='item_id', how='left')
         self.ns_sampled_df = ns_sampled_df.merge(self.user_info, on='user_id', how='left')
-        """
-        왜 occupation은 처리가 되지 않았는지?
-        """
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
+        # 특이값을 제외하고 U랑 V는 달라질 수 있는데 영향은?
         self.user_embedding, self.item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.embedding_merge(self.user_embedding, self.item_embedding)
         #self.label_encode()
@@ -143,71 +141,65 @@ class Preprocessor:
         # for i in range(item_embedding.shape[1]):
         #     item_embedding_df['item_embedding_'+str(i)]=item_embedding[:,i]
         
-        
-        #movie_emb_included_df=pd.merge(self.ns_sampled_df.set_index('item_id'), item_embedding_df,on='item_id',how='left')
-        #movie_emb_included_df=self.ns_sampled_df.join(item_embedding_df.set_index('item_id'),on='item_id')
-        #user_emb_included_df=movie_emb_included_df.join(user_embedding_df.set_index('user_id'),on='user_id')
+        # movie_emb_included_df=pd.merge(self.ns_sampled_df.set_index('item_id'), item_embedding_df,on='item_id',how='left')
+        # movie_emb_included_df=self.ns_sampled_df.join(item_embedding_df.set_index('item_id'),on='item_id')
+        # user_emb_included_df=movie_emb_included_df.join(user_embedding_df.set_index('user_id'),on='user_id')
         
 
         
-        #user_emb_included_df=pd.merge(movie_emb_included_df.set_index('user_id'),user_embedding_df, on='user_id',how='left')
+        # user_emb_included_df=pd.merge(movie_emb_included_df.set_index('user_id'),user_embedding_df, on='user_id',how='left')
 
 
        
     
     def label_encode(self):
 
-        self.cont_train_df=self.train_df.drop(self.cat_columns,axis=1)
-
-        train_df=self.train_df.copy(deep=True)
+        self.cont_train_df = self.train_df.drop(self.cat_columns, axis=1)
         # deep copy
+        train_df = self.train_df.copy(deep=True)
 
-        cont_columns=deepcopy(self.cont_columns)
-        cat_columns=deepcopy(self.cat_columns)
-        #label_encoders is a dictionary for labelencoder, holds labelencoder for each categorical column
-        self.label_encoders={}
-        #total_columns=new_train_df.columns
+        cont_columns = deepcopy(self.cont_columns)
+        cat_columns = deepcopy(self.cat_columns)
+        # label_encoders is a dictionary for labelencoder, holds labelencoder for each categorical column
+        self.label_encoders = {}
 
+        # when we use SVD, we don't need to encode user_id and item_id
         if self.args.embedding_type=='SVD':
-            #when we use SVD, we don't need to encode user_id and item_id
             for col in cat_columns:
                 le=LabelEncoder()
                 if col=='user_id' or col=='item_id':
-                    le.fit(train_df[col])
+                    le.fit(train_df[col]) # 위에선 필요없다면서 하는 이유가?
                 else:
                     train_df[col]=le.fit_transform(train_df[col])
                 self.label_encoders[col]=le
     
-            cat_train_df=train_df[cat_columns].drop(['user_id','item_id'],axis=1).to_numpy()[:].astype('int')
-            cont_columns=cont_columns+self.user_embedding_df.columns.tolist()+self.item_embedding_df.columns.tolist()
-            #delete user_id, item_id from cont_cols
+            cat_train_df = train_df[cat_columns].drop(['user_id','item_id'],axis=1).to_numpy()[:].astype('int')
+            cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
             
+            # user_id, item_id 삭제
             cont_columns.remove('user_id')
             cont_columns.remove('item_id')
 
-            cont_train_df=self.cont_train_df[cont_columns]    
-            self.args.cont_dims=len(cont_columns)
+            cont_train_df = self.cont_train_df[cont_columns]    
+            self.args.cont_dims = len(cont_columns)
             cat_columns.remove('user_id')
             cat_columns.remove('item_id')
             
-        
+        # when we use original embedding, we need to encode user_id and item_id
         else:
-            #when we use original embedding, we need to encode user_id and item_id
             for col in cat_columns:
                 le=LabelEncoder()
                 train_df[col]=le.fit_transform(train_df[col])
                 self.label_encoders[col]=le
-            cat_train_df=train_df[cat_columns].to_numpy()[:].astype('int')
-            cont_train_df=self.cont_train_df[cont_columns]
-            self.args.cont_dims=len(cont_columns)
+            cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
+            cont_train_df = self.cont_train_df[cont_columns]
+            self.args.cont_dims = len(cont_columns)
 
-        self.cat_columns_temp=cat_columns
-        self.cont_columns_temp=cont_columns
-        self.uidf=train_df[['user_id','item_id']]
-        self.cat_train_df_temp=cat_train_df
-        #self.cont_train_df_temp=cont_train_df
-        self.cont_train_df_temp=cont_train_df.to_numpy()[:].astype('float32')
+        self.cat_columns_temp = cat_columns
+        self.cont_columns_temp = cont_columns
+        self.uidf = train_df[['user_id','item_id']]
+        self.cat_train_df_temp = cat_train_df
+        self.cont_train_df_temp = cont_train_df.to_numpy()[:].astype('float32')
         
-        
-        self.field_dims=np.max(self.cat_train_df_temp,axis=0)+1
-        self.train_df_temp=train_df.copy(deep=True)
+        self.field_dims = np.max(self.cat_train_df_temp,axis=0)+1
+        self.train_df_temp = train_df.copy(deep=True)

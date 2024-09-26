@@ -1,4 +1,9 @@
 import torch
+import numpy as np
+import json
+import time
+from copy import deepcopy
+
 from torch.utils.data import Dataset
 from src.util.negativesampler import NegativeSampler
 import argparse
@@ -13,12 +18,9 @@ from src.customtest import Emb_Test
 from sklearn.preprocessing import LabelEncoder
 from src.model.original.deepfm import DeepFM
 from src.model.SVD import SVD
-import time
-import numpy as np
 #copy
-import json
-from copy import deepcopy
 from src.util.preprocessor import Preprocessor
+import pytorch_lightning as pl
 
 # 인자 전달
 parser = argparse.ArgumentParser()
@@ -44,8 +46,8 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16, help='embedding dimension for DeepFM')
 #parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='original', help='AE or SVD or original')
-parser.add_argument('--model_type', type=str, default='deepfm', help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='SVD', help='AE or SVD or original')
+parser.add_argument('--model_type', type=str, default='fm', help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5, help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1, help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False, help='true if uniform false if not')
@@ -77,52 +79,50 @@ def getdata(args):
     return preprocessor
 
 
-def trainer(args,data:Preprocessor):
+def trainer(args, data: Preprocessor):
 
     data.label_encode()
-    items, cons = data.get_catcont_train()
+    items, conts = data.get_catcont_train()
     target, c = data.get_target_c()
     field_dims = data.get_field_dims()
     uidf = data.uidf.values
 
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
-    # model type이 FM
     if args.model_type=='fm' and args.embedding_type=='original':
-        model=FactorizationMachine(args,field_dims)
-        Dataset=CustomDataLoader(items,cons,target,c)
+        model = FactorizationMachine(args, field_dims)
+        Dataset = CustomDataLoader(items, conts, target, c)
 
     elif args.model_type=='deepfm' and args.embedding_type=='original':
-        model=DeepFM(args,field_dims)
-        Dataset=CustomDataLoader(items,cons,target,c)
+        model = DeepFM(args, field_dims)
+        Dataset = CustomDataLoader(items, conts, target, c)
 
     elif args.model_type=='fm' and args.embedding_type=='SVD':
-        model=FactorizationMachineSVD(args,field_dims)
-        embs=cons[:,-args.num_eigenvector*2:] # Here, numeighenvector*2 refers to embeddings for both user and item
-        cons=cons[:,:-args.num_eigenvector*2] # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset=SVDDataloader(items,embs,uidf,cons,target,c)
+        model = FactorizationMachineSVD(args, field_dims)
+        embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
+        conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
+        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
 
     elif args.model_type=='deepfm' and args.embedding_type=='SVD':
-        model=DeepFMSVD(args,field_dims)
-        embs=cons[:,-args.num_eigenvector*2:] # Here, numeighenvector*2 refers to embeddings for both user and item
-        cons=cons[:,:-args.num_eigenvector*2] # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset=SVDDataloader(items,embs,uidf,cons,target,c)
+        model = DeepFMSVD(args, field_dims)
+        embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
+        conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
+        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
 
     else:
         raise NotImplementedError
     
     
-    #dataloaders
+    # dataloaders
+    dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
 
-    dataloader=DataLoader(Dataset,batch_size=args.batch_size,shuffle=True,num_workers=20)
+    
 
-    import pytorch_lightning as pl
-
-    #fm=DeepFM(args,field_dims)
-    import time
-    start=time.time()
-    trainer=pl.Trainer(max_epochs=args.num_epochs_training)
-    trainer.fit(model,dataloader)
-    end=time.time()
+    # fm=DeepFM(args,field_dims)
+    
+    start = time.time()
+    trainer = pl.Trainer(max_epochs=args.num_epochs_training)
+    trainer.fit(model, dataloader)
+    end = time.time()
     return model, end-start
 
 if __name__=='__main__':
@@ -130,22 +130,22 @@ if __name__=='__main__':
 
     results={}
 
-    data_info=getdata(args)
+    data_info = getdata(args)
 
-    print('model type is',args.model_type)
-    print('embedding type is',args.embedding_type)
-    model,timeee=trainer(args,data_info)
-    test_time=time.time()
-    tester=Emb_Test(args,model,data_info)
+    print('model type is', args.model_type)
+    print('embedding type is', args.embedding_type)
+    model, timeee = trainer(args, data_info)
+    test_time = time.time()
+    tester = Emb_Test(args,model,data_info)
 
 
     if args.embedding_type=='SVD':
-        result=tester.svdtest()
+        result = tester.svdtest()
     else:
-        result=tester.test()
+        result = tester.test()
     
     
-    end_test_time=time.time()
+    end_test_time = time.time()
     results[args.model_type+args.embedding_type]=result
     #results[md+embedding]=result
     print(results)

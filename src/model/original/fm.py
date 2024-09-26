@@ -2,7 +2,7 @@ from typing import Any
 import torch
 import torch.nn as nn
 from src.model.original.layers import MLP,FeatureEmbedding, FM_Linear,FM_Interaction
-#lightning
+
 import pytorch_lightning as pl
 
 class FactorizationMachine(pl.LightningModule):
@@ -10,24 +10,24 @@ class FactorizationMachine(pl.LightningModule):
         super(FactorizationMachine, self).__init__()
 
         if args.model_type=='fm':
-            self.embedding=FeatureEmbedding(args,field_dims)
-        self.linear=FM_Linear(args,field_dims)
-        self.interaction=FM_Interaction(args,field_dims)
-        self.bceloss=nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
-        self.lr=args.lr
-        self.args=args
-        self.sig=nn.Sigmoid()
-        self.last_linear=nn.Linear(2,1)
+            self.embedding = FeatureEmbedding(args, field_dims)
+        self.linear = FM_Linear(args, field_dims)
+        self.interaction = FM_Interaction(args,field_dims)
+        self.bceloss = nn.BCEWithLogitsLoss() # since BCEWith logits is used, we don't need to add sigmoid layer in the end
+        self.lr = args.lr
+        self.args = args
+        self.sig = nn.Sigmoid()
+        self.last_linear = nn.Linear(2,1)
 
 
     def l2norm(self):
-        reg=0
+        reg = 0
         for param in self.linear.parameters():
-            reg+=torch.norm(param)**2
+            reg += torch.norm(param)**2
         for param in self.embedding.parameters():
-            reg+=torch.norm(param)**2
+            reg += torch.norm(param)**2
         for param in self.interaction.parameters():
-            reg+=torch.norm(param)**2
+            reg += torch.norm(param)**2
         return reg*self.args.weight_decay
 
     def loss(self, y_pred, y_true,c_values):
@@ -73,12 +73,3 @@ class FactorizationMachine(pl.LightningModule):
 
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
-    
-
-    
-
-
-
-
-
-    
