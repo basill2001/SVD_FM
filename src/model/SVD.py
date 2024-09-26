@@ -1,18 +1,27 @@
 from scipy.sparse.linalg import svds
 from sklearn.decomposition import TruncatedSVD
+
 class SVD:
 
     def __init__(self,args) -> None:
-        self.args=args
+        self.args = args
         pass
 
-
     def fit_svd(self, x):
+        """
+        sparse matrix(x)와 number of singular values(k)를 입력받으면 
+        SVD 행렬분해 수행
+        """
         u, s, vt = svds(x, k = self.args.num_eigenvector)
         return u, vt.T
 
-    def get_embedding(self,x):
+    def fit_truncatedSVD(self, x):
 
+        truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
+        u = truncsvd.fit_transform(x)
+        v = truncsvd.components_
+        
+        return u, v.T
         # temp_data = x[['user_id', 'movie_id', 'rating']]
         # pivot_data = temp_data.pivot(index = 'user_id', columns = 'movie_id', values = 'rating')
         # pivot_data = pivot_data.fillna(0)
@@ -20,9 +29,7 @@ class SVD:
         # pivot_data = pivot_data.to_numpy()
         # # x dtype to float
 
-        truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
-        u=truncsvd.fit_transform(x)
-        v=truncsvd.components_
+
         # u,s,vt= self.fit_svd(x)
 
-        return u, v.T
+        

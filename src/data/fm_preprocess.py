@@ -6,13 +6,14 @@ import torch.optim as optim
 import tqdm
 import random
 from copy import deepcopy
+
 class FM_Preprocessing:
+
     def __init__(self, args,df, target_col='target', num_epochs=10):
         self.args=args
         self.df = df
         self.target_col = target_col
         self.num_epochs = num_epochs
-        #self.user_id=df['AUTH_CUSTOMER_ID']
         self.X_tensor, self.y_tensor, self.c_values_tensor, self.user_feature_tensor, self.item_feature_tensor, self.all_item_ids, self.num_features,self.dics = self.prepare_data()
         if not isinstance(df, pd.DataFrame):
             raise ValueError("The df parameter should be a pandas DataFrame.")
@@ -20,14 +21,12 @@ class FM_Preprocessing:
         if target_col not in df.columns:
             raise ValueError(f"The target column {target_col} is not in the DataFrame.")
 
-    
-
     def prepare_data(self):
         #X_new=self.generate_not_purchased_data(self.df)
         X = self.df #temporary
 
         # X = preprocess_positive(X) # pls preprocess postive either
-        #y = self.df[self.target_col]
+        # y = self.df[self.target_col]
         c = self.df['c']
         if self.args.embedding_type=='original':
             X=X.drop(['target','c','user_id','movie_id'],axis=1,inplace=False)

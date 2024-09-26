@@ -1,5 +1,3 @@
-
-
 from src.data.movielens100k import Movielens100k
 from src.data.movielens1m import Movielens1m
 from src.data.shoppingdata import ShoppingData
@@ -35,24 +33,23 @@ class DataWrapper:
 
 
     def get_data(self):
-        self.ui_matrix=self.get_user_item_matrix()
+        self.ui_matrix = self.get_user_item_matrix()
         #self.unseen_movies=self.get_unseen_movies()
 
-        return self.train,self.test,self.item_info,self.user_info,self.ui_matrix
+        return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
     
-
-
+    
     def get_user_item_matrix(self):
 
         #get useritem matrix
-        train=self.train
+        train = self.train
         # 행이 user 열이 item인 관계 matrix 생성
-        useritem_matrix=train.pivot_table(index='user_id',columns='item_id',values='rating')
-        useritem_matrix=useritem_matrix.fillna(0)
-        useritem_matrix=useritem_matrix.astype(float)
+        useritem_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
+        useritem_matrix = useritem_matrix.fillna(0)
+        useritem_matrix =useritem_matrix.astype(float)
         # 구매했을 경우 1로 설정
-        useritem_matrix[useritem_matrix >= 4] = 1
-        useritem_matrix[useritem_matrix < 4]  = 0
+        useritem_matrix[useritem_matrix >= 3] = 1
+        useritem_matrix[useritem_matrix < 3]  = 0
         useritem_matrix = useritem_matrix.to_numpy()
         # x dtype to float``
         useritem_matrix=useritem_matrix.astype(float)  
@@ -64,8 +61,8 @@ class DataWrapper:
     def get_col_type(self):
         
         # 범주형, 연속형을 나누어서 저장
-        cat_cols=[]
-        cont_cols=[]
+        cat_cols = []
+        cont_cols = []
         cat_cols.append('user_id')
         cat_cols.append('item_id')
 
@@ -89,22 +86,22 @@ class DataWrapper:
                 cat_cols.append(col)
             elif self.user_info[col].dtype=='float64' :
                 cont_cols.append(col)
-        return cat_cols,cont_cols
+        return cat_cols, cont_cols
 
 
 
-    def get_unseen_movies(self):
-        train=self.train
-        user_ids=train['user_id'].unique()
-        unseen_movies={}
-        for i in tqdm.tqdm(user_ids):
-            temp=train[train['user_id']==i]
-            #unseen_movies[i]=list(set( )-set(temp['item']))
-            # set of seen  movies
-            seen_movies=set(temp['item_id'].unique())
-            # set of all movies
-            all_movies=set(train['item_id'].unique())
-            # set of unseen movies
-            unseen_movies[i]=list(all_movies-seen_movies)
+    # def get_unseen_movies(self):
+    #     train = self.train
+    #     user_ids=train['user_id'].unique()
+    #     unseen_movies={}
+    #     for i in tqdm.tqdm(user_ids):
+    #         temp=train[train['user_id']==i]
+    #         #unseen_movies[i]=list(set( )-set(temp['item']))
+    #         # set of seen  movies
+    #         seen_movies=set(temp['item_id'].unique())
+    #         # set of all movies
+    #         all_movies=set(train['item_id'].unique())
+    #         # set of unseen movies
+    #         unseen_movies[i]=list(all_movies-seen_movies)
         
-        return unseen_movies
+    #     return unseen_movies

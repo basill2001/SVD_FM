@@ -21,7 +21,6 @@ class Emb_Test:
         self.user_embedding,self.item_embedding=data.get_embedding()
         self.catcol,self.contcol=data.get_column_info()        
         self.train_org=data.get_original_train()
-    
 
 
     def test_data_generator(self,user_id):

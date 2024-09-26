@@ -8,20 +8,19 @@ class NegativeSampler:
     #  make a function that returns negative sampled data
 
     def __init__(self, args, original_df, item_info, user_info) -> None:
-        self.args=args
+        self.args = args
         self.original_df = original_df
-        self.seed=np.random.seed(args.seed)
+        self.seed = np.random.seed(args.seed)
         self.original_df.drop(columns=['timestamp','rating'], axis=1, inplace=True)
-        self.original_df['target']=1
-        self.original_df['c']=1
-        self.item_info=item_info
-        self.user_info=user_info
+        self.original_df['target'] = 1
+        self.original_df['c'] = 1
+        self.item_info = item_info
+        self.user_info = user_info
         pass
 
     # function that calculates the c value for each customer and product
     # higher beta -> more weight on product frequency
     # higher alpha -> more weight on customer frequency
-
     def get_c(self, df, uu_sum, ii_sum, alpha=.5, beta=.5, gamma=.5, c_zero=10):
         c_zero = self.args.c_zeros
         UF = np.array(df["user_frequency"].astype("float"), dtype=float)
@@ -38,9 +37,10 @@ class NegativeSampler:
         return c_appended_df
     
     def negativesample(self, isuniform=False):
-
+        # df을 가져온 후 손님마다 구매한 data와 (negative sampling을 통해 얻은) 구매하지 않은 data 생성해 return
+        # isuniform인 경우 frequency 이용
         unique_customers = self.original_df['user_id'].unique()
-        df=self.original_df
+        df = self.original_df
         not_purchased_df = pd.DataFrame()
         ns_df_list = []
         df['user_frequency'] = df.groupby('user_id')['user_id'].transform('count')
@@ -50,14 +50,14 @@ class NegativeSampler:
         print("Negative Sampling Started")
 
         for customer in tqdm.tqdm(unique_customers[:]):
-            #unique_products = df['item_id'].unique()
+            # unique_products = df['item_id'].unique()
 
 
             customer_frequency = df[df['user_id'] == customer]['user_frequency'].iloc[0]
             purchased_products = df[df['user_id'] == customer]['item_id'].unique()
 
-            #customer_birth_category = df[df['user_id'] == customer]['BIRTH_YEAR'].iloc[0]
-            #customer_gender_category = df[df['user_id'] == customer]['GENDER'].iloc[0]
+            # customer_birth_category = df[df['user_id'] == customer]['BIRTH_YEAR'].iloc[0]
+            # customer_gender_category = df[df['user_id'] == customer]['GENDER'].iloc[0]
 
             not_purchased_df_all = df[~df['item_id'].isin(purchased_products)]
             # user가 구매하지 않은 item들의 코드
@@ -100,7 +100,7 @@ class NegativeSampler:
         mm_sum = np.sum(mm.tolist())
 
         # user마다 몇 번 구매했는지
-        uu=self.user_info['user_id'].map(self.original_df['user_id'].value_counts())
+        uu = self.user_info['user_id'].map(self.original_df['user_id'].value_counts())
         # change nan to 0
         uu.fillna(0, inplace=True)
         # 총 구매횟수

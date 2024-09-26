@@ -20,7 +20,7 @@ class Preprocessor:
         :param args:  Arguments object
         """
         self.args = args
-        self.train_org=train_df.copy(deep=True)
+        self.train_org = train_df.copy(deep=True)
         self.train_df = train_df
         self.test_df = test_df
         self.item_info = item_info
@@ -81,7 +81,7 @@ class Preprocessor:
         :param data: Input data
         :return: Preprocessed data
         """ 
-        # Negative 
+        # Negative Sampling
         ns = NegativeSampler(self.args, self.train_df, self.item_info, self.user_info)
         ns_sampled_df = ns.negativesample(self.args.isuniform)
         self.target = ns_sampled_df['target'].to_numpy()
@@ -91,22 +91,25 @@ class Preprocessor:
         # merge item_info and user_info => 나중에 merge하는 작업은 밑에 있는 embedding merge에서 하는걸로 처리해주기
         ns_sampled_df = ns_sampled_df.merge(self.item_info, on='item_id', how='left')
         self.ns_sampled_df = ns_sampled_df.merge(self.user_info, on='user_id', how='left')
+        """
+        왜 occupation은 처리가 되지 않았는지?
+        """
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
-        self.user_embedding, self.item_embedding = SVD(self.args).get_embedding(self.ui_matrix)
+        self.user_embedding, self.item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.embedding_merge(self.user_embedding, self.item_embedding)
         #self.label_encode()
 
     
     def embedding_merge(self,user_embedding,item_embedding):
 
-        #from trainingdf if user_id is 1, then user_embedding[0] is the embedding
-        from trainingdf if user_id is 1, then movie_embedding[0] is the embedding
+        # from trainingdf if user_id is 1, then user_embedding[0] is the embedding
+        # from trainingdf if user_id is 1, then movie_embedding[0] is the embedding
         """
         user_embedding and movie_embedding are both numpy arrays
         user_embedding.shape[0] is the number of users
         """
-        user_embedding_df=pd.DataFrame()
-        item_embedding_df=pd.DataFrame()
+        user_embedding_df = pd.DataFrame()
+        item_embedding_df = pd.DataFrame()
 
         user_embedding_df['user_id']=sorted(self.ns_sampled_df['user_id'].unique())
 
@@ -120,15 +123,20 @@ class Preprocessor:
         for i in range(item_embedding.shape[1]):
             item_embedding_columns.append('item_embedding_'+str(i))
 
-        ue_df=pd.DataFrame(user_embedding,columns=user_embedding_columns)
-        ie_df=pd.DataFrame(item_embedding,columns=item_embedding_columns)
+        ue_df = pd.DataFrame(user_embedding,columns=user_embedding_columns)
+        ie_df = pd.DataFrame(item_embedding,columns=item_embedding_columns)
 
-        user_embedding_df=pd.concat([user_embedding_df,ue_df],axis=1)
-        item_embedding_df=pd.concat([item_embedding_df,ie_df],axis=1)
+        user_embedding_df = pd.concat([user_embedding_df,ue_df],axis=1)
+        item_embedding_df = pd.concat([item_embedding_df,ie_df],axis=1)
 
+        movie_emb_included_df = pd.concat([self.ns_sampled_df.reset_index(drop=True), 
+                                           item_embedding_df.set_index('item_id').reindex(self.ns_sampled_df['item_id'].values).reset_index(drop=True)], 
+                                           axis=1)
+        user_emb_included_df = pd.concat([movie_emb_included_df.reset_index(drop=True), 
+                                          user_embedding_df.set_index('user_id').reindex(movie_emb_included_df['user_id'].values).reset_index(drop=True)], 
+                                          axis=1)
 
-
-
+        return user_emb_included_df, user_embedding_df, item_embedding_df
         # for i in range(user_embedding.shape[1]):
         #     user_embedding_df['user_embedding_'+str(i)]=user_embedding[:,i]
 
@@ -139,14 +147,13 @@ class Preprocessor:
         #movie_emb_included_df=pd.merge(self.ns_sampled_df.set_index('item_id'), item_embedding_df,on='item_id',how='left')
         #movie_emb_included_df=self.ns_sampled_df.join(item_embedding_df.set_index('item_id'),on='item_id')
         #user_emb_included_df=movie_emb_included_df.join(user_embedding_df.set_index('user_id'),on='user_id')
-        movie_emb_included_df=pd.concat([self.ns_sampled_df.reset_index(drop=True), item_embedding_df.set_index('item_id').reindex(self.ns_sampled_df['item_id'].values).reset_index(drop=True)], axis=1)
-        user_emb_included_df=pd.concat([movie_emb_included_df.reset_index(drop=True), user_embedding_df.set_index('user_id').reindex(movie_emb_included_df['user_id'].values).reset_index(drop=True)], axis=1)
+        
 
         
         #user_emb_included_df=pd.merge(movie_emb_included_df.set_index('user_id'),user_embedding_df, on='user_id',how='left')
 
 
-        return user_emb_included_df,user_embedding_df,item_embedding_df
+       
     
     def label_encode(self):
 
