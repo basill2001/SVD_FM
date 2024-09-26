@@ -2,7 +2,7 @@ import pandas as pd
 
 class Frappe:
     def __init__(self, args):
-        self.args=args
+        self.args = args
         #self.fold=fold #should be integer
 
     def data_getter(self):
