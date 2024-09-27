@@ -87,21 +87,3 @@ class DataWrapper:
             elif self.user_info[col].dtype=='float64' :
                 cont_cols.append(col)
         return cat_cols, cont_cols
-
-
-
-    # def get_unseen_movies(self):
-    #     train = self.train
-    #     user_ids=train['user_id'].unique()
-    #     unseen_movies={}
-    #     for i in tqdm.tqdm(user_ids):
-    #         temp=train[train['user_id']==i]
-    #         #unseen_movies[i]=list(set( )-set(temp['item']))
-    #         # set of seen  movies
-    #         seen_movies=set(temp['item_id'].unique())
-    #         # set of all movies
-    #         all_movies=set(train['item_id'].unique())
-    #         # set of unseen movies
-    #         unseen_movies[i]=list(all_movies-seen_movies)
-        
-    #     return unseen_movies
