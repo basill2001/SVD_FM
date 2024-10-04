@@ -4,9 +4,9 @@ import numpy as np
 
 class MLP(nn.Module):
 
-    def __init__(self, args,input_size):
+    def __init__(self, args, input_size):
         super(MLP, self).__init__()
-        self.args=args
+        self.args = args
         self.deep_layers = nn.ModuleList()
         for i in range(args.num_deep_layers):
             self.deep_layers.append(nn.Linear(input_size, args.deep_layer_size))
@@ -27,7 +27,7 @@ class FeatureEmbedding(nn.Module):
 
     def __init__(self,args,field_dims):
         super(FeatureEmbedding, self).__init__()
-        self.embedding=nn.Embedding(sum(field_dims+1),args.emb_dim)
+        self.embedding=  nn.Embedding(sum(field_dims+1),args.emb_dim)
         self.field_dims=field_dims
         # for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         # as the features should be embedded column-wise this operatation easily makes it possible
@@ -35,29 +35,25 @@ class FeatureEmbedding(nn.Module):
 
     def forward(self, x):
         # input x: batch_size * num_features
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)  # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
-
-        x=self.embedding(x)
-
+        x = x + x.new_tensor(self.offsets).unsqueeze(0) # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
+        x = self.embedding(x)
 
         return x
 
 
 class FM_Linear(nn.Module):
-
     def __init__(self,args,field_dims):
         super(FM_Linear, self).__init__()
-        self.linear=torch.nn.Embedding(sum(field_dims)+1,1)
-        self.bias=nn.Parameter(torch.randn(1))
-        self.w=nn.Parameter(torch.randn(args.cont_dims))
+        self.linear = torch.nn.Embedding(sum(field_dims)+1,1)
+        self.bias = nn.Parameter(torch.randn(1))
+        self.w = nn.Parameter(torch.randn(args.cont_dims))
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
         self.args=args
     
     def forward(self, x,x_cont):
         # input x: batch_size * num_features
-        x=x+x.new_tensor(self.offsets).unsqueeze(0)
-        
-        linear_term=self.linear(x)
+        x = x + x.new_tensor(self.offsets).unsqueeze(0)
+        linear_term = self.linear(x)
         # linear_term: batch_size * num_features * 1
 
 

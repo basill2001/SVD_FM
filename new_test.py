@@ -116,9 +116,6 @@ def trainer(args, data: Preprocessor):
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
 
     
-
-    # fm=DeepFM(args,field_dims)
-    
     start = time.time()
     trainer = pl.Trainer(max_epochs=args.num_epochs_training)
     trainer.fit(model, dataloader)

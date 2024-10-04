@@ -19,7 +19,7 @@ class FactorizationMachine(pl.LightningModule):
         self.sig = nn.Sigmoid()
         self.last_linear = nn.Linear(2,1)
 
-
+    # loss 구하는 데 이용
     def l2norm(self):
         reg = 0
         for param in self.linear.parameters():
@@ -32,7 +32,7 @@ class FactorizationMachine(pl.LightningModule):
 
     def loss(self, y_pred, y_true,c_values):
         # calculate weighted mse with l2 regularization
-        #mse = (y_pred - y_true.float()) ** 2
+        # mse = (y_pred - y_true.float()) ** 2
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
         #l2_reg = torch.norm(self.w)**2 + torch.norm(self.v)**2
