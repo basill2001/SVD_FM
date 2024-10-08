@@ -34,7 +34,6 @@ class DataWrapper:
 
     def get_data(self):
         self.ui_matrix = self.get_user_item_matrix()
-        #self.unseen_movies=self.get_unseen_movies()
 
         return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
     

@@ -69,7 +69,6 @@ def getdata(args):
     
     # get any dataset
     dataset = DataWrapper(args)
-
     train_df, test, item_info, user_info, ui_matrix = dataset.get_data()
     cat_cols, cont_cols = dataset.get_col_type()
     # those are basic dataframes that we can get from various datasets
@@ -82,6 +81,7 @@ def getdata(args):
 def trainer(args, data: Preprocessor):
 
     data.label_encode()
+    # cat_cols와 cont_cols에 해당하는 data들 출력
     items, conts = data.get_catcont_train()
     target, c = data.get_target_c()
     field_dims = data.get_field_dims()
