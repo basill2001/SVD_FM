@@ -64,7 +64,7 @@ class DataWrapper:
         cont_cols = []
         cat_cols.append('user_id')
         cat_cols.append('item_id')
-
+        
         for col in self.item_info.columns:
             if col=='item_id':
                 continue

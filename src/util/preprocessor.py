@@ -44,7 +44,7 @@ class Preprocessor:
         :return: Categorical and continuous train data
         """
         return self.cat_train_df_temp, self.cont_train_df_temp
-
+    
     def get_train_test(self):
         """
         Method to get the train and test data
