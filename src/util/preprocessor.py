@@ -7,7 +7,6 @@ from src.model.SVD import SVD
 from copy import deepcopy
 
 
-
 class Preprocessor:
     """
     Preprocessor class for preprocessing the input data
@@ -41,9 +40,9 @@ class Preprocessor:
     def get_catcont_train(self):
         """
         Method to get the categorical and continuous train data
-        :return: Categorical and continuous train data
+        return: Categorical and continuous train data
         """
-        return self.cat_train_df_temp, self.cont_train_df_temp
+        return self.cat_train_df, self.cont_train_df
 
     def get_train_test(self):
         """
@@ -135,20 +134,6 @@ class Preprocessor:
                                           axis=1)
 
         return user_emb_included_df, user_embedding_df, item_embedding_df
-        # for i in range(user_embedding.shape[1]):
-        #     user_embedding_df['user_embedding_'+str(i)]=user_embedding[:,i]
-
-        # for i in range(item_embedding.shape[1]):
-        #     item_embedding_df['item_embedding_'+str(i)]=item_embedding[:,i]
-        
-        # movie_emb_included_df=pd.merge(self.ns_sampled_df.set_index('item_id'), item_embedding_df,on='item_id',how='left')
-        # movie_emb_included_df=self.ns_sampled_df.join(item_embedding_df.set_index('item_id'),on='item_id')
-        # user_emb_included_df=movie_emb_included_df.join(user_embedding_df.set_index('user_id'),on='user_id')
-        
-
-        
-        # user_emb_included_df=pd.merge(movie_emb_included_df.set_index('user_id'),user_embedding_df, on='user_id',how='left')
-
 
        
     
@@ -173,14 +158,14 @@ class Preprocessor:
                     train_df[col]=le.fit_transform(train_df[col])
                 self.label_encoders[col]=le
     
-            cat_train_df = train_df[cat_columns].drop(['user_id','item_id'],axis=1).to_numpy()[:].astype('int')
+            cat_train_df_temp = train_df[cat_columns].drop(['user_id','item_id'],axis=1).to_numpy()[:].astype('int')
             cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
             
             # user_id, item_id 삭제
             cont_columns.remove('user_id')
             cont_columns.remove('item_id')
 
-            cont_train_df = self.cont_train_df[cont_columns]    
+            cont_train_df_temp = self.cont_train_df[cont_columns]    
             self.args.cont_dims = len(cont_columns)
             cat_columns.remove('user_id')
             cat_columns.remove('item_id')
@@ -191,15 +176,15 @@ class Preprocessor:
                 le=LabelEncoder()
                 train_df[col]=le.fit_transform(train_df[col])
                 self.label_encoders[col]=le
-            cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
-            cont_train_df = self.cont_train_df[cont_columns]
+            cat_train_df_temp = train_df[cat_columns].to_numpy()[:].astype('int')
+            cont_train_df_temp = self.cont_train_df[cont_columns]
             self.args.cont_dims = len(cont_columns)
 
         self.cat_columns_temp = cat_columns
         self.cont_columns_temp = cont_columns
         self.uidf = train_df[['user_id','item_id']]
-        self.cat_train_df_temp = cat_train_df
-        self.cont_train_df_temp = cont_train_df.to_numpy()[:].astype('float32')
+        self.cat_train_df = cat_train_df_temp
+        self.cont_train_df = cont_train_df_temp.to_numpy()[:].astype('float32')
         
-        self.field_dims = np.max(self.cat_train_df_temp,axis=0)+1
+        self.field_dims = np.max(self.cat_train_df,axis=0)+1
         self.train_df_temp = train_df.copy(deep=True)
