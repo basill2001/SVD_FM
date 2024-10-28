@@ -1,26 +1,31 @@
-import torch
 import numpy as np
+import torch
 import json
+import argparse
 import time
 from copy import deepcopy
 
+import pytorch_lightning as pl
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
+
 from src.util.negativesampler import NegativeSampler
-import argparse
+
 from src.data_util.customdataloader import CustomDataLoader
 from src.data_util.SVDdataloader import SVDDataloader
-from torch.utils.data import DataLoader
 from src.data_util.datawrapper import DataWrapper
+
 from src.model.original.fm import FactorizationMachine
-from src.model.SVD_emb.svdfm import FactorizationMachineSVD
-from src.model.SVD_emb.svddeepfm import DeepFMSVD   
-from src.customtest import Emb_Test
-from sklearn.preprocessing import LabelEncoder
 from src.model.original.deepfm import DeepFM
+from src.model.SVD_emb.svdfm import FactorizationMachineSVD
+from src.model.SVD_emb.svddeepfm import DeepFMSVD
 from src.model.SVD import SVD
+from src.customtest import Emb_Test
+
 #copy
 from src.util.preprocessor import Preprocessor
-import pytorch_lightning as pl
+
 
 # 인자 전달
 parser = argparse.ArgumentParser()
