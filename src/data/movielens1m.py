@@ -25,19 +25,6 @@ class Movielens1m:
     def train_test_getter(self):
         train=pd.read_csv('dataset/ml-1m/ratings.dat',sep='::',header=None, names=['user_id','movie_id','rating','timestamp'],encoding='latin-1')
         train=train.sort_values(by=['user_id','timestamp'])
-        # train_list=[]
-        # test_list=[]
-        # user_ids=train['user_id'].unique()
-        # for i in user_ids:
-        #     temp=train[train['user_id']==i]
-        #     train_list.append(temp.iloc[:int(len(temp)*self.args.train_ratio)])
-        #     test_list.append(temp.iloc[int(len(temp)*(self.args.train_ratio)):])
-        # train=pd.concat(train_list)
-        # test=pd.concat(test_list)
-        # can you do the same operation without for loop?
-        #train.groupby('user_id').apply(lambda x: x.iloc[:int(len(x)*self.args.train_ratio)])
-        #train.groupby('user_id').apply(lambda x: x.iloc[int(len(x)*self.args.train_ratio):])
-        # user의 70%를 train set, 나머지를 test set으로 이용
         train_data=train.groupby('user_id').apply(lambda x: x.iloc[:int(len(x)*0.7)])
         test_data=train.groupby('user_id').apply(lambda x: x.iloc[int(len(x)*0.7):])
         train_data.reset_index(drop=True,inplace=True)

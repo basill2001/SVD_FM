@@ -7,19 +7,11 @@ class CustomDataLoader(data_utils.Dataset):
         self.cons = cons
         self.y = y
         self.c = c
-        
-        #self.emb_x=emb_x
-        super().__init__()
-    
 
+        super().__init__()
 
     def __len__(self):
-    
         return len(self.x)
-    
 
-    
     def __getitem__(self, index):
-
         return self.x[index], self.cons[index], self.y[index], self.c[index]
-

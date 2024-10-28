@@ -1,7 +1,7 @@
 from src.data.movielens100k import Movielens100k
 from src.data.movielens1m import Movielens1m
-from src.data.shoppingdata import ShoppingData
-from src.data.movielens10m import Movielens10m
+from src.data.shopping import Shopping
+# from src.data.movielens10m import Movielens10m
 from src.data.frappe import Frappe
 from src.data.goodbook import GoodBook
 import tqdm
@@ -12,16 +12,14 @@ class DataWrapper:
         pass
 
         # datatype에 따른 데이터를 self.data에 저장
-        if args.datatype=="ml100k": # 수정필요
+        if args.datatype=="ml100k":
             self.data = Movielens100k('dataset/ml-100k','u.data', args.fold)
-        elif args.datatype=="ml1m": # 수정필요
+        elif args.datatype=="ml1m":         # 수정필요
             self.data = Movielens1m(args)
-        elif args.datatype=="shopping": # 수정필요
-            self.data = ShoppingData(args)
-        elif args.datatype=="ml10m": # 데이터 사용불가 (현재로써는. )
-            self.data = Movielens10m(args)
+        elif args.datatype=="shopping":     # 수정필요
+            self.data = Shopping(args)
         elif args.datatype=="frappe":
-            self.data = Frappe(args) # 수정완료
+            self.data = Frappe(args)        # 수정완료
         elif args.datatype=="goodbook":
             self.data = GoodBook(args)
         else:

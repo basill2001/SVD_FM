@@ -58,22 +58,3 @@ class Movielens100k:
         user_info = user_info[['user_id', 'age', 'gender', 'occupation']]
 
         return user_info
-    
-
-    # 이 부분은 없어도 잘 돌아가는 듯?
-    # def get_user_item_matrix(self):
-
-    #     # get useritem matrix
-    #     train=pd.read_csv('dataset/ml-100k/u'+str(self.fold)+'.base',sep='\t',header=None, names=['user_id','movie_id','rating','timestamp'],encoding='latin-1')
-    #     useritem_matrix = train.pivot_table(index='user_id',columns='movie_id',values='rating')
-        
-    #     print(useritem_matrix)
-    #     useritem_matrix = useritem_matrix.fillna(0)
-    #     useritem_matrix = useritem_matrix.astype(float)
-    #     useritem_matrix[useritem_matrix >= 1] = 1
-    #     useritem_matrix = useritem_matrix.to_numpy()
-    #     # x dtype to float
-    #     useritem_matrix=useritem_matrix.astype(float)  
-
-    #     return useritem_matrix
-    

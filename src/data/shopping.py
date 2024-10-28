@@ -1,5 +1,6 @@
 import pandas as pd
-class ShoppingData:
+
+class Shopping:
     def __init__(self, args):
         self.args=args
         #self.fold=fold #should be integer
