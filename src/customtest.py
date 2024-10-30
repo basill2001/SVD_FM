@@ -8,7 +8,7 @@ import torch
 
 class Tester:
 
-    def __init__(self, args, model, data:Preprocessor) -> None:
+    def __init__(self, args, model, data: Preprocessor) -> None:
 
         self.args = args
         self.model = model
@@ -28,15 +28,12 @@ class Tester:
         
         npuser_movie = np.zeros((len(item_ids), 4))
         npuser_movie = npuser_movie.astype(int)
-        npuser_movie[:,0] = np.repeat(user_id,len(item_ids))
+        npuser_movie[:,0] = np.repeat(user_id, len(item_ids))
         npuser_movie[:,1] = item_ids
-        #2nd column is target
-        npuser_movie[:,2] = 1
-        # 3rd column is c
-        npuser_movie[:,3] = 1
+        npuser_movie[:,2] = 1 # 2nd column is target
+        npuser_movie[:,3] = 1 # 3rd column is 'c'
 
-        user_movie = pd.DataFrame(npuser_movie,columns=['user_id','item_id','target','c'])
-        #user_movie=c.movieonehot()
+        user_movie = pd.DataFrame(npuser_movie, columns=['user_id','item_id','target','c'])
         user_movie['user_id'] = user_movie['user_id'].astype(int)
         user_movie['item_id'] = user_movie['item_id'].astype(int)
         target = user_movie['target'].astype(int)
@@ -71,12 +68,11 @@ class Tester:
         for customerid in tqdm.tqdm(user_list[:]):
 
             temp = self.test_data_generator(customerid)
-
-            X_cat=temp[self.catcol].values
-            
+            X_cat = temp[self.catcol].values
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
             X_cont = temp[self.contcol].values
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
+
             svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
             X_cont = X_cont[:, :-self.args.num_eigenvector*2]
             emb_x = self.model.embedding(X_cat)
@@ -157,11 +153,6 @@ class Tester:
 
             temp = self.test_data_generator(customerid)
             X_cat = temp[self.catcol].value
-            # if self.args.embedding_type=='SVD':
-            #     X_cat=temp[self.catcol].values
-            # else:
-            #     X_cat=temp[self.catcol].values
-
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
             X_cont = temp[self.contcol].values
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
