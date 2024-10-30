@@ -29,21 +29,7 @@ class Frappe:
         train=train.rename(columns={'user':'user_id'})
         train=train .sort_values(by=['user_id'])
         train.drop(columns=['daytime','weekday','isweekend','homework','weather','country','city','cnt','cost'], inplace=True)
-        # train_list=[]
-        # test_list=[]
-        # user_ids=train['user_id'].unique()
-        # for i in user_ids:
-        #     temp=train[train['user_id']==i]
-        #     train_list.append(temp.iloc[:int(len(temp)*self.args.train_ratio)])
-        #     test_list.append(temp.iloc[int(len(temp)*(self.args.train_ratio)):])
-        # train=pd.concat(train_list)
-        # test=pd.concat(test_list)
-        # can you do the same operation without for loop?
-        #train.groupby('user_id').apply(lambda x: x.iloc[:int(len(x)*self.args.train_ratio)])
-        #train.groupby('user_id').apply(lambda x: x.iloc[int(len(x)*self.args.train_ratio):])
         train['timestamp']=0
-
-
 
         train_data=train.groupby('user_id').apply(lambda x: x.iloc[:int(len(x)*0.7)])
         test_data=train.groupby('user_id').apply(lambda x: x.iloc[int(len(x)*0.7):])
