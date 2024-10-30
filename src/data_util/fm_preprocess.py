@@ -10,7 +10,7 @@ from copy import deepcopy
 class FM_Preprocessing:
 
     def __init__(self, args,df, target_col='target', num_epochs=10):
-        self.args=args
+        self.args = args
         self.df = df
         self.target_col = target_col
         self.num_epochs = num_epochs
@@ -22,18 +22,12 @@ class FM_Preprocessing:
             raise ValueError(f"The target column {target_col} is not in the DataFrame.")
 
     def prepare_data(self):
-        #X_new=self.generate_not_purchased_data(self.df)
-        X = self.df #temporary
-
-        # X = preprocess_positive(X) # pls preprocess postive either
-        # y = self.df[self.target_col]
+        X = self.df # temporary
+        X = X.drop(['target','c','user_id','movie_id'], axis=1, inplace=False)
+        y = self.df['target']
         c = self.df['c']
-        if self.args.embedding_type=='original':
-            X=X.drop(['target','c','user_id','movie_id'],axis=1,inplace=False)
-        else:
-            X=X.drop(['target','c','user_id','movie_id'],axis=1,inplace=False)
-        y=self.df['target']
-        # there are booleans in dataframe X and I want to change dtype of the data to float
+
+        # to unity dtypes to float
         X = X.astype(float)
 
         X_tensor = torch.tensor(X.values, dtype=torch.int64)
@@ -44,12 +38,10 @@ class FM_Preprocessing:
 
         # want to make user_id and product_id mapping dictionary
 
-        # num_features = X.shape[1]
         user_feature_tensor = 1
         item_feature_tensor = 1
         all_item_ids = 1
         num_features = X.shape[1]
-        dics=1
+        dics = 1
         
         return X_tensor, y_tensor, c_values_tensor, user_feature_tensor, item_feature_tensor, all_item_ids, num_features,dics
-
