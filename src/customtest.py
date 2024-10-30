@@ -1,18 +1,17 @@
 import pandas as pd
 import numpy as np
-#from src.data.custompreprocess import CustomOneHot
 from src.data_util.fm_preprocess import FM_Preprocessing
 from src.util.preprocessor import Preprocessor
 import tqdm
 import torch
-import copy
+# import copy
 
-class Emb_Test:
+class Tester:
 
     def __init__(self, args, model, data:Preprocessor) -> None:
 
         self.args = args
-        self.mode = model
+        self.model = model
 
         self.train_df, self.test_org = data.get_train_test()
         self.user_df, self.item_df = data.get_user_item_info()
@@ -22,13 +21,11 @@ class Emb_Test:
         self.train_org = data.get_original_train()
 
 
-    def test_data_generator(self,user_id):
-        # want to make a dataframe that has user_id, item_id and for every user_id, item_id pair 
+    # to make dataframe with all user_id, item_id 
+    def test_data_generator(self, user_id):
         item_ids = self.le['item_id'].classes_
         user_ids = self.le['user_id'].classes_
-        # make a dataframe that has all the user_id, item_id pairs
-
-
+        
         npuser_movie = np.zeros((len(item_ids), 4))
         npuser_movie = npuser_movie.astype(int)
         npuser_movie[:,0] = np.repeat(user_id,len(item_ids))
