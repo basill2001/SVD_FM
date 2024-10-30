@@ -21,7 +21,7 @@ from src.model.original.deepfm import DeepFM
 from src.model.SVD_emb.svdfm import FactorizationMachineSVD
 from src.model.SVD_emb.svddeepfm import DeepFMSVD
 from src.model.SVD import SVD
-from src.customtest import Emb_Test
+from src.customtest import Tester
 
 #copy
 from src.util.preprocessor import Preprocessor
@@ -77,10 +77,10 @@ def getdata(args):
 
     train_df, test, item_info, user_info, ui_matrix = dataset.get_data()
     cat_cols, cont_cols = dataset.get_col_type()
-    # those are basic dataframes that we can get from various datasets
-    preprocessor = Preprocessor(args, train_df, test, user_info, item_info, ui_matrix, cat_cols, cont_cols)
     # preprocessor is a class that preprocesses dataframes and returns
     # : train_df, test_df, item_info, user_info, useritem_matrix, cat_columns, cont_columns, label_encoders, user_embedding, item_embedding
+    preprocessor = Preprocessor(args, train_df, test, user_info, item_info, ui_matrix, cat_cols, cont_cols)
+
     return preprocessor
 
 
@@ -119,7 +119,6 @@ def trainer(args, data: Preprocessor):
     
     # dataloaders
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
-
     
     start = time.time()
     trainer = pl.Trainer(max_epochs=args.num_epochs_training)
@@ -129,23 +128,19 @@ def trainer(args, data: Preprocessor):
 
 if __name__=='__main__':
     args = parser.parse_args("")
-
-    results={}
-
+    results = {}
     data_info = getdata(args)
 
     print('model type is', args.model_type)
     print('embedding type is', args.embedding_type)
     model, timeee = trainer(args, data_info)
     test_time = time.time()
-    tester = Emb_Test(args,model,data_info)
-
+    tester = Tester(args,model,data_info)
 
     if args.embedding_type=='SVD':
         result = tester.svdtest()
     else:
         result = tester.test()
-    
     
     end_test_time = time.time()
     results[args.model_type+args.embedding_type]=result
