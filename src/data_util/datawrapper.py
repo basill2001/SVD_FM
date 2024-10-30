@@ -9,7 +9,6 @@ class DataWrapper:
 
     def __init__(self, args) -> None:
         pass
-
         # datatype에 따른 데이터를 self.data에 저장
         if args.datatype=="ml100k":
             self.data = Movielens100k('dataset/ml-100k','u.data', args.fold)
@@ -27,29 +26,24 @@ class DataWrapper:
         # 각 data마다 만들어진 class에 있는 data_getter 사용
         self.train, self.test, self.item_info, self.user_info = self.data.data_getter()
 
-
-
     def get_data(self):
-        self.ui_matrix = self.get_user_item_matrix()
+        self.ui_matrix = self.get_ui_matrix()
         return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
-    
-    
-    def get_user_item_matrix(self):
 
-        #get useritem matrix
+    
+    def get_ui_matrix(self):
         train = self.train
         # 행이 user 열이 item인 관계 matrix 생성
-        useritem_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
-        useritem_matrix = useritem_matrix.fillna(0)
-        useritem_matrix = useritem_matrix.astype(float)
-        # 구매했을 경우 1로 설정
-        useritem_matrix[useritem_matrix >= 3] = 1
-        useritem_matrix[useritem_matrix < 3]  = 0
-        useritem_matrix = useritem_matrix.to_numpy()
-        # x dtype to float
-        useritem_matrix = useritem_matrix.astype(float)
+        ui_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
+        ui_matrix = ui_matrix.fillna(0)
+        ui_matrix = ui_matrix.astype(float)
+        # 별점이 3 이상일 경우 1로 설정
+        ui_matrix[ui_matrix >= 3] = 1
+        ui_matrix[ui_matrix < 3]  = 0
+        ui_matrix = ui_matrix.to_numpy()
+        ui_matrix = ui_matrix.astype(float)
 
-        return useritem_matrix
+        return ui_matrix
     
 
 
@@ -63,21 +57,21 @@ class DataWrapper:
         for col in self.item_info.columns:
             if col=='item_id':
                 continue
-            if self.item_info[col].dtype=='object' :
+            if self.item_info[col].dtype=='object':
                 cat_cols.append(col)
-            elif self.item_info[col].dtype=='int64' :
+            elif self.item_info[col].dtype=='int64':
                 cat_cols.append(col)
-            elif self.item_info[col].dtype=='float64' :
+            elif self.item_info[col].dtype=='float64':
                 cont_cols.append(col)
-
+    
         for col in self.user_info.columns:
             if col=='user_id':
                 continue
-
-            if self.user_info[col].dtype=='object' :
+            if self.user_info[col].dtype=='object':
                 cat_cols.append(col)
-            elif self.user_info[col].dtype=='int64' :
+            elif self.user_info[col].dtype=='int64':
                 cat_cols.append(col)
-            elif self.user_info[col].dtype=='float64' :
+            elif self.user_info[col].dtype=='float64':
                 cont_cols.append(col)
+    
         return cat_cols, cont_cols

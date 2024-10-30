@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.data_util.fm_preprocess import FM_Preprocessing
+# from src.data_util.fm_preprocess import FM_Preprocessing
 from src.util.preprocessor import Preprocessor
 import tqdm
 import torch
@@ -41,7 +41,7 @@ class Tester:
 
         return final_df
     
-    def svdtest(self, user_embedding=None, movie_embedding=None):
+    def svdtest(self):
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
             if col=='user_id' or col=='item_id':
@@ -51,9 +51,9 @@ class Tester:
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
         
-        for customerid in tqdm.tqdm(user_list[:]):
+        for user_id in tqdm.tqdm(user_list[:]):
 
-            temp = self.test_data_generator(customerid)
+            temp = self.test_data_generator(user_id)
             X_cat = temp[self.cat_cols].values
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
             X_cont = temp[self.cont_cols].values
@@ -71,15 +71,15 @@ class Tester:
             topidx = torch.argsort(result,descending=True)[:]
             topidx = topidx.tolist()
 
-            if customerid not in self.test_org['user_id'].unique():
+            if user_id not in self.test_org['user_id'].unique():
                 continue
 
-            print("customer id: ",customerid, end=" ")
+            print("customer id: ",user_id, end=" ")
             ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
             # reorder movie_list
             ml = ml[topidx]
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
+            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([user_id])[0]]['item_id'].unique())
             
             #  testing needs to be done with item_id that exists in train data
             cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
@@ -89,7 +89,7 @@ class Tester:
             
             print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
 
-            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])
+            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==user_id])
             cur_user_test = cur_user_test[:, 1]
             cur_user_test = np.unique(cur_user_test)
             cur_user_test = cur_user_test.tolist()
@@ -124,7 +124,7 @@ class Tester:
         return metrics
 
 
-    def test(self, user_embedding=None, movie_embedding=None):
+    def test(self):
 
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:

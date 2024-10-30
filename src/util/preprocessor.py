@@ -131,22 +131,7 @@ class Preprocessor:
                                           axis=1)
 
         return user_emb_included_df, user_embedding_df, item_embedding_df
-        # for i in range(user_embedding.shape[1]):
-        #     user_embedding_df['user_embedding_'+str(i)]=user_embedding[:,i]
 
-        # for i in range(item_embedding.shape[1]):
-        #     item_embedding_df['item_embedding_'+str(i)]=item_embedding[:,i]
-        
-        # movie_emb_included_df=pd.merge(self.ns_sampled_df.set_index('item_id'), item_embedding_df,on='item_id',how='left')
-        # movie_emb_included_df=self.ns_sampled_df.join(item_embedding_df.set_index('item_id'),on='item_id')
-        # user_emb_included_df=movie_emb_included_df.join(user_embedding_df.set_index('user_id'),on='user_id')
-        
-
-        
-        # user_emb_included_df=pd.merge(movie_emb_included_df.set_index('user_id'),user_embedding_df, on='user_id',how='left')
-
-
-       
     
     def label_encode(self):
 

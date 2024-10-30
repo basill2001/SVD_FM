@@ -20,24 +20,21 @@ class Movielens100k:
 
         # change column names movie_id to item_id
         # add column item_id to movie_info
-        movie_info.rename(columns={'movie_id':'item_id'},inplace=True)
+        movie_info.rename(columns={'movie_id':'item_id'}, inplace=True)
 
 
-        return self.train,self.test,movie_info,user_info
+        return self.train, self.test, movie_info, user_info
     
     def movie_getter(self):
-        
         #simple preproccess of movie_data
-        movie_info=pd.read_csv('dataset/ml-100k/u.item',sep='|',header=None, names=['movie_id','movie_title','release_date','video_release_date','IMDb_URL','unknown','Action','Adventure','Animation','Children','Comedy','Crime','Documentary','Drama','Fantasy','Film-Noir','Horror','Musical','Mystery','Romance','Sci-Fi','Thriller','War','Western'],encoding='latin-1')
-        movie_info.drop(['movie_title','release_date','video_release_date','IMDb_URL'],axis=1,inplace=True)
-        
+        movie_info = pd.read_csv('dataset/ml-100k/u.item', sep='|', header=None, names=['movie_id','movie_title','release_date','video_release_date','IMDb_URL','unknown','Action','Adventure','Animation','Children','Comedy','Crime','Documentary','Drama','Fantasy','Film-Noir','Horror','Musical','Mystery','Romance','Sci-Fi','Thriller','War','Western'],encoding='latin-1')
+        movie_info.drop(['movie_title', 'release_date', 'video_release_date', 'IMDb_URL'], axis=1, inplace=True)
         return movie_info
 
     def user_getter(self):
-        
         #simple preproccess of user_data
-        user_info = pd.read_csv('dataset/ml-100k/u.user',sep='|', names=['age','gender','occupation','zipcode'])
-        user_info.drop(['zipcode'],axis=1,inplace=True)
+        user_info = pd.read_csv('dataset/ml-100k/u.user', sep='|', names=['age','gender','occupation','zipcode'])
+        user_info.drop(['zipcode'], axis=1, inplace=True)
         
         user_info['user_id'] = user_info.index
         user_info['gender'] = [1 if i == 'M' else 0 for i in user_info['gender']]
