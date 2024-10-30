@@ -11,7 +11,6 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from src.util.negativesampler import NegativeSampler
-
 from src.data_util.customdataloader import CustomDataLoader
 from src.data_util.SVDdataloader import SVDDataloader
 from src.data_util.datawrapper import DataWrapper
@@ -23,31 +22,25 @@ from src.model.SVD_emb.svddeepfm import DeepFMSVD
 from src.model.SVD import SVD
 from src.customtest import Tester
 
-#copy
 from src.util.preprocessor import Preprocessor
 
 
 # 인자 전달
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--train_ratio', type=float, default=0.7, help='training ratio for any dataset')
-
-
+parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
 # parser.add_argument('--num_factors', type=int, default=15, help='Number of factors for FM')
-parser.add_argument('--lr', type=float, default=0.001, help='Learning rate for fm training')
+parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
 # parser.add_argument('--num_epochs_ae', type=int, default=300,    help='Number of epochs')
-parser.add_argument('--num_epochs_training', type=int, default=100,    help='Number of epochs')
-
-parser.add_argument('--batch_size', type=int, default=4096, help='Batch size')
+parser.add_argument('--num_epochs_training', type=int, default=1,  help='Number of epochs')
+parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 # parser.add_argument('--ae_batch_size', type=int, default=256, help='Batch size for autoencoder')
-
-parser.add_argument('--num_workers', type=int, default=10, help='Number of workers for dataloader')
+parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2, help='Number of deep layers')
 parser.add_argument('--deep_layer_size', type=int, default=128, help='Size of deep layers')
 parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('--save_model', type=bool, default=False)
-
 
 parser.add_argument('--emb_dim', type=int, default=16, help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
@@ -135,15 +128,14 @@ if __name__=='__main__':
     print('embedding type is', args.embedding_type)
     model, timeee = trainer(args, data_info)
     test_time = time.time()
-    tester = Tester(args,model,data_info)
+    tester = Tester(args, model, data_info)
 
     if args.embedding_type=='SVD':
         result = tester.svdtest()
     else:
         result = tester.test()
-    
+
     end_test_time = time.time()
-    results[args.model_type+args.embedding_type]=result
-    #results[md+embedding]=result
+    results[args.model_type + args.embedding_type] = result
     print(results)
     print("time :", timeee)

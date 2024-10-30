@@ -31,11 +31,9 @@ class Preprocessor:
         self.preprocess()
     
     def get_original_train(self):
-
         return self.train_org
 
     def get_user_item_info(self):
-
         return self.user_info, self.item_info
 
     def get_catcont_train(self):
@@ -63,9 +61,8 @@ class Preprocessor:
 
         return self.user_embedding_df,self.item_embedding_df
     
-    def get_label_encoder(self):
-
-        return self.label_encoders
+    def get_le_dict(self):
+        return self.le_dict
     
     def get_field_dims(self):
 
@@ -95,7 +92,6 @@ class Preprocessor:
         # 특이값을 제외하고 U랑 V는 달라질 수 있는데 영향은?
         self.user_embedding, self.item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.embedding_merge(self.user_embedding, self.item_embedding)
-        #self.label_encode()
 
     
     def embedding_merge(self,user_embedding,item_embedding):
@@ -160,20 +156,20 @@ class Preprocessor:
 
         cont_columns = deepcopy(self.cont_columns)
         cat_columns = deepcopy(self.cat_columns)
-        # label_encoders is a dictionary for labelencoder, holds labelencoder for each categorical column
-        self.label_encoders = {}
+        # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
+        self.le_dict = {}
 
         # when we use SVD, we don't need to encode user_id and item_id
         if self.args.embedding_type=='SVD':
             for col in cat_columns:
-                le=LabelEncoder()
+                le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
                     le.fit(train_df[col]) # 위에선 필요없다면서 하는 이유가?
                 else:
-                    train_df[col]=le.fit_transform(train_df[col])
-                self.label_encoders[col]=le
+                    train_df[col] = le.fit_transform(train_df[col])
+                self.le_dict[col] = le
     
-            cat_train_df = train_df[cat_columns].drop(['user_id','item_id'],axis=1).to_numpy()[:].astype('int')
+            cat_train_df = train_df[cat_columns].drop(['user_id','item_id'], axis=1).to_numpy()[:].astype('int')
             cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
             
             # user_id, item_id 삭제
@@ -190,7 +186,7 @@ class Preprocessor:
             for col in cat_columns:
                 le=LabelEncoder()
                 train_df[col]=le.fit_transform(train_df[col])
-                self.label_encoders[col]=le
+                self.le_dict[col]=le
             cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
             cont_train_df = self.cont_train_df[cont_columns]
             self.args.cont_dims = len(cont_columns)

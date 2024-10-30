@@ -4,7 +4,6 @@ from src.data.shopping import Shopping
 # from src.data.movielens10m import Movielens10m
 from src.data.frappe import Frappe
 from src.data.goodbook import GoodBook
-import tqdm
 
 class DataWrapper:
 
@@ -32,7 +31,6 @@ class DataWrapper:
 
     def get_data(self):
         self.ui_matrix = self.get_user_item_matrix()
-
         return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
     
     
@@ -43,20 +41,19 @@ class DataWrapper:
         # 행이 user 열이 item인 관계 matrix 생성
         useritem_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
         useritem_matrix = useritem_matrix.fillna(0)
-        useritem_matrix =useritem_matrix.astype(float)
+        useritem_matrix = useritem_matrix.astype(float)
         # 구매했을 경우 1로 설정
         useritem_matrix[useritem_matrix >= 3] = 1
         useritem_matrix[useritem_matrix < 3]  = 0
         useritem_matrix = useritem_matrix.to_numpy()
-        # x dtype to float``
-        useritem_matrix=useritem_matrix.astype(float)  
+        # x dtype to float
+        useritem_matrix = useritem_matrix.astype(float)
 
         return useritem_matrix
     
 
 
     def get_col_type(self):
-        
         # 범주형, 연속형을 나누어서 저장
         cat_cols = []
         cont_cols = []

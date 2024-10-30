@@ -15,62 +15,48 @@ class Tester:
 
         self.train_df, self.test_org = data.get_train_test()
         self.user_df, self.item_df = data.get_user_item_info()
-        self.le = data.get_label_encoder()  # le is labelencoder
+        self.le_dict = data.get_le_dict()  # le is labelencoder
         self.user_embedding, self.item_embedding = data.get_embedding()
-        self.catcol, self.contcol = data.get_column_info()        
+        self.cat_cols, self.cont_cols = data.get_column_info()        
         self.train_org = data.get_original_train()
 
-
-    # to make dataframe with all user_id, item_id 
+    # to make dataframe with given user_id
     def test_data_generator(self, user_id):
-        item_ids = self.le['item_id'].classes_
-        user_ids = self.le['user_id'].classes_
+        item_ids = self.le_dict['item_id'].classes_
+        user_ids = np.repeat(user_id, len(item_ids))
+        test_df = pd.DataFrame({"user_id" : user_ids, "item_id" : item_ids})
         
-        npuser_movie = np.zeros((len(item_ids), 4))
-        npuser_movie = npuser_movie.astype(int)
-        npuser_movie[:,0] = np.repeat(user_id, len(item_ids))
-        npuser_movie[:,1] = item_ids
-        npuser_movie[:,2] = 1 # 2nd column is target
-        npuser_movie[:,3] = 1 # 3rd column is 'c'
+        test_df = pd.merge(test_df, self.item_df, on='item_id', how='left')
+        test_df = pd.merge(test_df, self.user_df, on='user_id', how='left')
+        test_df = pd.merge(test_df.set_index('item_id'), self.item_embedding, on='item_id', how='left')
+        test_df = pd.merge(test_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
 
-        user_movie = pd.DataFrame(npuser_movie, columns=['user_id','item_id','target','c'])
-        user_movie['user_id'] = user_movie['user_id'].astype(int)
-        user_movie['item_id'] = user_movie['item_id'].astype(int)
-        target = user_movie['target'].astype(int)
-        c = user_movie['c'].astype(int)
-        user_movie.drop(['target','c'], axis=1, inplace=True)
+        final_df = test_df
 
-        movieinfoadded = pd.merge(user_movie, self.item_df, on='item_id', how='left')
-        userinfoadded = pd.merge(movieinfoadded, self.user_df, on='user_id', how='left')
+        for col in self.cat_cols: # 카테고리 column들을 차례로
+            final_df[col] = self.le_dict[col].transform(final_df[col]) # 각 label encoder을 이용해 transform
+        if self.args.embedding_type=='SVD': # embedding type이 SVD면 user_id와 item_id도 transform시켜줌
+            final_df['user_id'] = self.le_dict['user_id'].transform(final_df['user_id'])
+            final_df['item_id'] = self.le_dict['item_id'].transform(final_df['item_id'])
 
-        #cat_cols=userinfoadded.colum
-        movie_emb_included_df = pd.merge(userinfoadded.set_index('item_id'), self.item_embedding, on='item_id', how='left')
-        user_emb_included_df = pd.merge(movie_emb_included_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
-    
-        for col in self.catcol:
-            user_emb_included_df[col] = self.le[col].transform(user_emb_included_df[col])
-        if self.args.embedding_type=='SVD':
-            user_emb_included_df['user_id'] = self.le['user_id'].transform(user_emb_included_df['user_id'])
-            user_emb_included_df['item_id'] = self.le['item_id'].transform(user_emb_included_df['item_id'])
-
-        return user_emb_included_df
+        return final_df
     
     def svdtest(self, user_embedding=None, movie_embedding=None):
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
             if col=='user_id' or col=='item_id':
-                train_org[col] = self.le[col].transform(train_org[col])
+                train_org[col] = self.le_dict[col].transform(train_org[col])
 
-        user_list = self.le['user_id'].classes_
+        user_list = self.le_dict['user_id'].classes_
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
         
         for customerid in tqdm.tqdm(user_list[:]):
 
             temp = self.test_data_generator(customerid)
-            X_cat = temp[self.catcol].values
+            X_cat = temp[self.cat_cols].values
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
-            X_cont = temp[self.contcol].values
+            X_cont = temp[self.cont_cols].values
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
 
             svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
@@ -89,14 +75,14 @@ class Tester:
                 continue
 
             print("customer id: ",customerid, end=" ")
-            ml = list(self.le['item_id'].inverse_transform(temp['item_id'].unique()))
+            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
             # reorder movie_list
             ml = ml[topidx]
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le['user_id'].transform([customerid])[0]]['item_id'].unique())
+            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
             
             #  testing needs to be done with item_id that exists in train data
-            cur_userslist = self.le['item_id'].inverse_transform(cur_userslist)
+            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
             
             # erase the things in ml that are in cur_userslist without changing the order
             real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
@@ -143,18 +129,18 @@ class Tester:
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
             if col=='user_id' or col=='item_id':
-                train_org[col]=self.le[col].transform(train_org[col])
+                train_org[col]=self.le_dict[col].transform(train_org[col])
 
-        user_list = self.le['user_id'].classes_
+        user_list = self.le_dict['user_id'].classes_
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
 
         for customerid in tqdm.tqdm(user_list[:]):
 
             temp = self.test_data_generator(customerid)
-            X_cat = temp[self.catcol].value
+            X_cat = temp[self.cat_cols].value
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
-            X_cont = temp[self.contcol].values
+            X_cont = temp[self.cont_cols].values
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
     
             if self.args.model_type=='fm':
@@ -171,14 +157,14 @@ class Tester:
                 continue
 
             print("customer id: ",customerid, end=" ")
-            ml = list(self.le['item_id'].inverse_transform(temp['item_id'].unique()))
+            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
             # reorder movie_list
             ml = ml[topidx]
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le['user_id'].transform([customerid])[0]]['item_id'].unique())
+            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
             
             # 여기 안본게 포함되어있을 수 있음 이거 처리해줘야함
-            cur_userslist = self.le['item_id'].inverse_transform(cur_userslist)
+            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
             
             # erase the things in ml that are in cur_userslist without changing the order
             real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
