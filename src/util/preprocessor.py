@@ -73,10 +73,10 @@ class Preprocessor:
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
         # 특이값을 제외하고 U랑 V는 달라질 수 있는데 영향은?
         self.user_embedding, self.item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
-        self.train_df, self.user_embedding_df, self.item_embedding_df = self.embedding_merge(self.user_embedding, self.item_embedding)
+        self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(self.user_embedding, self.item_embedding)
 
     
-    def embedding_merge(self,user_embedding,item_embedding):
+    def merge_embedding(self, user_embedding, item_embedding):
         # from trainingdf if user_id is 1, then user_embedding[0] is the embedding
         # from trainingdf if user_id is 1, then movie_embedding[0] is the embedding
         """
