@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 from typing import Any
 
 import torch
-from src.model.original.fm import FactorizationMachine
+from src.model.original.fm import FM
 from src.model.original.layers import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
 
 
@@ -16,7 +16,7 @@ class DeepFM(pl.LightningModule):
         self.lr = args.lr
         self.field_dims = field_dims
         self.linear = FM_Linear(args, field_dims)
-        self.fm = FactorizationMachine(args, field_dims)
+        self.fm = FM(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
         self.embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)

@@ -6,9 +6,9 @@ from src.model.SVD_emb.layers import MLP, FeatureEmbedding, FM_Linear, FM_Intera
 # lightning
 import pytorch_lightning as pl
 
-class FactorizationMachineSVD(pl.LightningModule):
+class FMSVD(pl.LightningModule):
     def __init__(self, args, field_dims):
-        super(FactorizationMachineSVD, self).__init__()
+        super(FMSVD, self).__init__()
 
         self.lr = args.lr
         self.args = args
@@ -18,8 +18,8 @@ class FactorizationMachineSVD(pl.LightningModule):
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
-        self.interaction = FM_Interaction(args, field_dims)
-        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
+        self.interaction = FM_Interaction(args)
+        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
 
 
     def l2norm(self):
@@ -39,8 +39,7 @@ class FactorizationMachineSVD(pl.LightningModule):
         loss_y = weighted_bce.mean() + self.l2norm()
         return loss_y 
     
-    def forward(self, x,emb_x,svd_emb,x_cont):
-        # FM part loss with interaction terms
+    def forward(self, x, emb_x, svd_emb, x_cont):
         # x: batch_size * num_features
         lin_term = self.linear(x, svd_emb, x_cont)
         inter_term, cont_emb = self.interaction(emb_x, svd_emb, x_cont)
@@ -53,7 +52,6 @@ class FactorizationMachineSVD(pl.LightningModule):
         x = x.squeeze(1)
         return x, cont_emb, lin_term, inter_term
 
-    
     def training_step(self, batch, batch_idx):
         x, svd_emb, ui, x_cont, y, c_values = batch
         embed_x = self.embedding(x)

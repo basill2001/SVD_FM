@@ -3,7 +3,7 @@ from sklearn.decomposition import TruncatedSVD
 
 class SVD:
 
-    def __init__(self,args) -> None:
+    def __init__(self, args) -> None:
         self.args = args
         pass
 
@@ -12,7 +12,7 @@ class SVD:
         sparse matrix(x)와 number of singular values(k)를 입력받으면 
         SVD 행렬분해 수행
         """
-        u, s, vt = svds(x, k = self.args.num_eigenvector)
+        u, s, vt = svds(x, k=self.args.num_eigenvector)
         return u, vt.T
 
     def fit_truncatedSVD(self, x):

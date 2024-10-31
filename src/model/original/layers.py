@@ -27,8 +27,8 @@ class FeatureEmbedding(nn.Module):
 
     def __init__(self,args,field_dims):
         super(FeatureEmbedding, self).__init__()
-        self.embedding=  nn.Embedding(sum(field_dims+1),args.emb_dim)
-        self.field_dims=field_dims
+        self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
+        self.field_dims = field_dims
         # for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         # as the features should be embedded column-wise this operatation easily makes it possible
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
@@ -37,79 +37,51 @@ class FeatureEmbedding(nn.Module):
         # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0) # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         x = self.embedding(x)
-
         return x
 
 
 class FM_Linear(nn.Module):
-    def __init__(self,args,field_dims):
+
+    def __init__(self, args, field_dims):
         super(FM_Linear, self).__init__()
-        self.linear = torch.nn.Embedding(sum(field_dims)+1,1)
+        self.linear = torch.nn.Embedding(sum(field_dims)+1, 1)
         self.bias = nn.Parameter(torch.randn(1))
         self.w = nn.Parameter(torch.randn(args.cont_dims))
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
-        self.args=args
+        self.args = args
     
     def forward(self, x,x_cont):
         # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
-        # linear_term: batch_size * num_features * 1
-
-
-        # add continuous features
-        cont_linear = torch.matmul(x_cont, self.w).reshape(-1,1)
-
-        x = torch.sum(linear_term,dim=1)+self.bias
-        # if self.args.embedding_type=='SVD':
-        #     x=x+cont_linear
-        # else:
-        x=x+cont_linear 
-
+        cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1) # add continuous features
+        
+        x = torch.sum(linear_term, dim=1) + self.bias
+        x = x + cont_linear 
         return x
 
 class FM_Interaction(nn.Module):
 
-    def __init__(self,args,input_size):
+    def __init__(self, args):
         super(FM_Interaction, self).__init__()
-        self.args=args
-        #self.v=nn.Parameter(torch.randn(args.num_eigenvector*2,16))
+        self.args = args
         self.v = nn.Parameter(torch.randn(args.cont_dims, args.emb_dim))
     
     def forward(self, x,x_cont):
-        # input x: batch_size * num_features * num_embedding
-        #cont_linear=torch.matmul(x_cont,self.v)
-        x_comb=x
-        x_cont=x_cont.unsqueeze(1)
-
-
-        linear=torch.sum(x_comb,1)**2
-        square_sum=torch.sum(x_comb**2,1)
-
-        #square_sum_emb=torch.concat((square_sum,x_cont**2),1)
-
-
+        x_comb = x
+        x_cont = x_cont.unsqueeze(1)
+        linear = torch.sum(x_comb, 1)**2
+        square_sum = torch.sum(x_comb**2, 1)
         if self.args.cont_dims==0:
-            new_linear=linear
-            new_interaction=square_sum
-
+            new_linear = linear
+            new_interaction = square_sum
         else:
-            cont_linear=torch.sum(torch.matmul(x_cont,self.v)**2,dim=1)
-            #cont_linear=torch.matmul(x_cont,self.v)**2
-            new_linear=torch.cat((linear,cont_linear),1)
+            cont_linear = torch.sum(torch.matmul(x_cont, self.v)**2, dim=1)
+            new_linear = torch.cat((linear, cont_linear), 1)
+            cont_interaction = torch.sum(torch.matmul(x_cont**2, self.v**2), 1, keepdim=True)
+            new_interaction = torch.cat((square_sum, cont_interaction.squeeze(1)), 1)
 
-
-            cont_interaction=torch.sum(torch.matmul(x_cont**2,self.v**2),1,keepdim=True)
-            new_interaction= torch.cat((square_sum,cont_interaction.squeeze(1)),1)
-
-
-
-        interaction=0.5*torch.sum(new_linear-new_interaction,1,keepdim=True)
-        
-        cont_emb=self.v.unsqueeze(0).repeat(x_comb.shape[0],1,1)
+        interaction = 0.5*torch.sum(new_linear-new_interaction, 1, keepdim=True)
+        cont_emb = self.v.unsqueeze(0).repeat(x_comb.shape[0], 1, 1)
 
         return interaction, cont_emb
-
-
-
-

@@ -3,16 +3,12 @@ from src.util.negativesampler import NegativeSampler
 import pandas as pd
 import numpy as np
 from src.model.SVD import SVD
-#copy
 from copy import deepcopy
-
-
 
 class Preprocessor:
     """
     Preprocessor class for preprocessing the input data
     """
-
     def __init__(self, args, train_df, test_df, user_info, item_info, 
                  ui_matrix, cat_columns, cont_columns):
         """
@@ -36,40 +32,25 @@ class Preprocessor:
     def get_user_item_info(self):
         return self.user_info, self.item_info
 
-    def get_catcont_train(self):
-        """
-        Method to get the categorical and continuous train data
-        :return: Categorical and continuous train data
-        """
+    def get_catcont_train(self): # get categorical and continuous train data
         return self.cat_train_df_temp, self.cont_train_df_temp
     
-    def get_train_test(self):
-        """
-        Method to get the train and test data
-        :return: Train and test data
-        """
+    def get_train_test(self): # get train and test data
         return self.train_df_temp, self.test_df
     
-    def get_column_info(self):
-        """
-        Method to get the column information
-        :return: Column information
-        """
+    def get_column_info(self): # get column information
         return self.cat_columns_temp, self.cont_columns_temp
     
     def get_embedding(self):
-
         return self.user_embedding_df,self.item_embedding_df
     
     def get_le_dict(self):
         return self.le_dict
     
     def get_field_dims(self):
-
         return self.field_dims
 
     def get_target_c(self):
-            
         return self.target, self.c
 
     def preprocess(self):
@@ -83,7 +64,7 @@ class Preprocessor:
         ns_sampled_df = ns.negativesample(self.args.isuniform)
         self.target = ns_sampled_df['target'].to_numpy()
         self.c = ns_sampled_df['c'].to_numpy()
-        ns_sampled_df.drop(['target','c'],axis=1,inplace= True)
+        ns_sampled_df.drop(['target', 'c'],axis=1,inplace= True)
 
         # merge item_info and user_info => 나중에 merge하는 작업은 밑에 있는 embedding merge에서 하는걸로 처리해주기
         ns_sampled_df = ns_sampled_df.merge(self.item_info, on='item_id', how='left')
@@ -95,7 +76,6 @@ class Preprocessor:
 
     
     def embedding_merge(self,user_embedding,item_embedding):
-
         # from trainingdf if user_id is 1, then user_embedding[0] is the embedding
         # from trainingdf if user_id is 1, then movie_embedding[0] is the embedding
         """
@@ -133,16 +113,15 @@ class Preprocessor:
 
     
     def label_encode(self):
-
         self.cont_train_df = self.train_df.drop(self.cat_columns, axis=1)
         # deep copy
         train_df = self.train_df.copy(deep=True)
 
         cont_columns = deepcopy(self.cont_columns)
         cat_columns = deepcopy(self.cat_columns)
+        
         # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
         self.le_dict = {}
-
         # when we use SVD, we don't need to embedd user_id and item_id
         if self.args.embedding_type=='SVD':
             for col in cat_columns:
@@ -157,6 +136,7 @@ class Preprocessor:
             cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
             
             # user_id, item_id 삭제
+            cont_columns.remove(['user_id', 'item_id'])
             cont_columns.remove('user_id')
             cont_columns.remove('item_id')
 

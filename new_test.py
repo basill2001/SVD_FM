@@ -15,11 +15,10 @@ from src.data_util.customdataloader import CustomDataLoader
 from src.data_util.SVDdataloader import SVDDataloader
 from src.data_util.datawrapper import DataWrapper
 
-from src.model.original.fm import FactorizationMachine
+from src.model.original.fm import FM
 from src.model.original.deepfm import DeepFM
-from src.model.SVD_emb.svdfm import FactorizationMachineSVD
-from src.model.SVD_emb.svddeepfm import DeepFMSVD
-from src.model.SVD import SVD
+from src.model.SVD_emb.fmsvd import FMSVD
+from src.model.SVD_emb.deepfmsvd import DeepFMSVD
 from src.customtest import Tester
 
 from src.util.preprocessor import Preprocessor
@@ -44,7 +43,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='SVD',   help='AE or SVD or original')
+parser.add_argument('--embedding_type', type=str, default='SVD',   help='SVD or original')
 parser.add_argument('--model_type', type=str, default='fm',        help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
@@ -53,7 +52,7 @@ parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negativ
 # parser.add_argument('--auto_lr', type=float, default=0.01, help='autoencoder learning rate')
 # parser.add_argument('--k', type=int, default=10, help='autoencoder k')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
-parser.add_argument('--datatype', type=str, default="frappe",    help='ml100k or ml1m or shopping or goodbook or frappe')
+parser.add_argument('--datatype', type=str, default="frappe",        help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
@@ -86,7 +85,7 @@ def trainer(args, data: Preprocessor):
 
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
     if args.model_type=='fm' and args.embedding_type=='original':
-        model = FactorizationMachine(args, field_dims)
+        model = FM(args, field_dims)
         Dataset = CustomDataLoader(items, conts, target, c)
 
     elif args.model_type=='deepfm' and args.embedding_type=='original':
@@ -94,7 +93,7 @@ def trainer(args, data: Preprocessor):
         Dataset = CustomDataLoader(items, conts, target, c)
 
     elif args.model_type=='fm' and args.embedding_type=='SVD':
-        model = FactorizationMachineSVD(args, field_dims)
+        model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
         Dataset = SVDDataloader(items, embs, uidf, conts, target, c)

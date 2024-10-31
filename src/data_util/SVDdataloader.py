@@ -5,12 +5,12 @@ import torch.utils.data as data_utils
 class SVDDataloader(data_utils.Dataset):
     # as we already converted to tensor, we can directly return the tensor
     def __init__(self,x,emb,ui,cons,y,c) -> None:
-        self.x=x
-        self.emb=emb
-        self.cons=cons
-        self.y=y
-        self.c=c
-        self.ui=ui
+        self.x = x
+        self.emb = emb
+        self.cons = cons
+        self.y = y
+        self.c = c
+        self.ui = ui
         
         #self.emb_x=emb_x
         super().__init__()

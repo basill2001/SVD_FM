@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 from typing import Any
 
 import torch
-from src.model.SVD_emb.svdfm import FactorizationMachineSVD
+from src.model.SVD_emb.fmsvd import FMSVD
 from src.model.SVD_emb.layers import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
 #from src.util.scaler import StandardScaler
 
@@ -14,20 +14,14 @@ class DeepFMSVD(pl.LightningModule):
     def __init__(self, args,field_dims):
         super(DeepFMSVD, self).__init__()
         self.linear = FM_Linear(args,field_dims)
-        self.fm = FactorizationMachineSVD(args, field_dims)
+        self.fm = FMSVD(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
 
         self.embed_output_dim = (len(field_dims))* args.emb_dim + 2*args.emb_dim+(args.cont_dims-2*args.num_eigenvector)*args.emb_dim
-
-        #self.embed_output_dim = (len(field_dims) +1)* args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss=nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
-        self.lr=args.lr
-        self.args=args
-        # self.simplemlp=nn.Sequential(
-        #         nn.Linear(args.cont_dims,args.num_eigenvector*2),
-        #         nn.ReLU(),
-        #         )
+        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
+        self.lr = args.lr
+        self.args = args
         self.field_dims=field_dims
         self.sig=nn.Sigmoid()
         self.lastlinear=nn.Linear(3,1)

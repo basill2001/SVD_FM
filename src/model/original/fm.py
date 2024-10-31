@@ -5,9 +5,9 @@ from src.model.original.layers import MLP,FeatureEmbedding, FM_Linear,FM_Interac
 
 import pytorch_lightning as pl
 
-class FactorizationMachine(pl.LightningModule):
+class FM(pl.LightningModule):
     def __init__(self, args, field_dims):
-        super(FactorizationMachine, self).__init__()
+        super(FM, self).__init__()
 
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
