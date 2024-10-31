@@ -16,7 +16,6 @@ class MLP(nn.Module):
         self.deep_output_layer = nn.Linear(input_size, 1)
     
     def forward(self, x): # original과 동일
-        # input x : batch_size * (num_features* num_embedding)
         deep_x = x
         for layer in self.deep_layers:
             deep_x = layer(deep_x)
