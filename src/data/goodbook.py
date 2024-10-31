@@ -67,4 +67,3 @@ class GoodBook:
         useritem_matrix=useritem_matrix.astype(float)  
 
         return useritem_matrix
-    

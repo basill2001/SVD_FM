@@ -105,23 +105,22 @@ class Preprocessor:
         user_embedding_df = pd.DataFrame()
         item_embedding_df = pd.DataFrame()
 
-        user_embedding_df['user_id']=sorted(self.ns_sampled_df['user_id'].unique())
+        user_embedding_df['user_id'] = sorted(self.ns_sampled_df['user_id'].unique())
+        item_embedding_df['item_id'] = sorted(self.ns_sampled_df['item_id'].unique())
 
-        item_embedding_df['item_id']=sorted(self.ns_sampled_df['item_id'].unique())
+        user_embedding_columns = []
+        item_embedding_columns = []
 
-        user_embedding_columns=[]
-        item_embedding_columns=[]
         for i in range(user_embedding.shape[1]):
             user_embedding_columns.append('user_embedding_'+str(i))
-        
         for i in range(item_embedding.shape[1]):
             item_embedding_columns.append('item_embedding_'+str(i))
 
-        ue_df = pd.DataFrame(user_embedding,columns=user_embedding_columns)
-        ie_df = pd.DataFrame(item_embedding,columns=item_embedding_columns)
+        ue_df = pd.DataFrame(user_embedding, columns=user_embedding_columns)
+        ie_df = pd.DataFrame(item_embedding, columns=item_embedding_columns)
 
-        user_embedding_df = pd.concat([user_embedding_df,ue_df],axis=1)
-        item_embedding_df = pd.concat([item_embedding_df,ie_df],axis=1)
+        user_embedding_df = pd.concat([user_embedding_df, ue_df], axis=1)
+        item_embedding_df = pd.concat([item_embedding_df, ie_df], axis=1)
 
         movie_emb_included_df = pd.concat([self.ns_sampled_df.reset_index(drop=True), 
                                            item_embedding_df.set_index('item_id').reindex(self.ns_sampled_df['item_id'].values).reset_index(drop=True)], 
@@ -144,12 +143,12 @@ class Preprocessor:
         # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
         self.le_dict = {}
 
-        # when we use SVD, we don't need to encode user_id and item_id
+        # when we use SVD, we don't need to embedd user_id and item_id
         if self.args.embedding_type=='SVD':
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
-                    le.fit(train_df[col]) # 위에선 필요없다면서 하는 이유가?
+                    le.fit(train_df[col])
                 else:
                     train_df[col] = le.fit_transform(train_df[col])
                 self.le_dict[col] = le

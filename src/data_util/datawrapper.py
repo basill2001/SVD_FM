@@ -1,9 +1,9 @@
 from src.data.movielens100k import Movielens100k
 from src.data.movielens1m import Movielens1m
-from src.data.shopping import Shopping
-# from src.data.movielens10m import Movielens10m
 from src.data.frappe import Frappe
 from src.data.goodbook import GoodBook
+#from src.data.shopping import Shopping
+# from src.data.movielens10m import Movielens10m
 
 class DataWrapper:
 
@@ -14,12 +14,12 @@ class DataWrapper:
             self.data = Movielens100k('dataset/ml-100k','u.data', args.fold)
         elif args.datatype=="ml1m":         # 수정필요
             self.data = Movielens1m(args)
-        elif args.datatype=="shopping":     # 수정필요
-            self.data = Shopping(args)
         elif args.datatype=="frappe":
             self.data = Frappe(args)        # 수정완료
         elif args.datatype=="goodbook":
             self.data = GoodBook(args)
+        # elif args.datatype=="shopping":     # 수정필요
+        #     self.data = Shopping(args)
         else:
             raise NotImplementedError
 

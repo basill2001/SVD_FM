@@ -10,15 +10,16 @@ class FactorizationMachineSVD(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(FactorizationMachineSVD, self).__init__()
 
+        self.lr = args.lr
+        self.args = args
+        self.sig = nn.Sigmoid()
+        self.last_linear = nn.Linear(2,1)
+        
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args, field_dims)
         self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
-        self.lr = args.lr
-        self.args = args
-        self.sig = nn.Sigmoid()
-        self.last_linear = nn.Linear(2,1)
 
 
     def l2norm(self):
@@ -29,7 +30,7 @@ class FactorizationMachineSVD(pl.LightningModule):
             reg += torch.norm(param)**2
         for param in self.interaction.parameters():
             reg += torch.norm(param)**2
-        return reg*self.args.weight_decay
+        return reg * self.args.weight_decay
 
     def loss(self, y_pred, y_true,c_values):
         # calculate weighted mse with l2 regularization

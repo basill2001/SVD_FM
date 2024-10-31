@@ -55,9 +55,9 @@ class Tester:
 
             temp = self.test_data_generator(user_id)
             X_cat = temp[self.cat_cols].values
-            X_cat = torch.tensor(X_cat, dtype=torch.int64)
+            X_cat = torch.tensor(X_cat, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
             X_cont = temp[self.cont_cols].values
-            X_cont = torch.tensor(X_cont, dtype=torch.float32)
+            X_cont = torch.tensor(X_cont, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
 
             svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
             X_cont = X_cont[:, :-self.args.num_eigenvector*2]
@@ -114,12 +114,12 @@ class Tester:
         # totla user number and total item number
         print("total user number: ",len(user_list))
         print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics={}
-        metrics['precision']=np.mean(precisions)
-        metrics['recall']=np.mean(recalls)
-        metrics['hit_rate']=np.mean(hit_rates)
-        metrics['reciprocal_rank']=np.mean(reciprocal_ranks)
-        metrics['dcg']=np.mean(dcgs)
+        metrics = {}
+        metrics['precision'] = np.mean(precisions)
+        metrics['recall'] = np.mean(recalls)
+        metrics['hit_rate'] = np.mean(hit_rates)
+        metrics['reciprocal_rank'] = np.mean(reciprocal_ranks)
+        metrics['dcg'] = np.mean(dcgs)
 
         return metrics
 
