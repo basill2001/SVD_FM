@@ -43,7 +43,7 @@ class FMSVD(pl.LightningModule):
         # x: batch_size * num_features
         lin_term = self.linear(x, svd_emb, x_cont)
         inter_term, cont_emb = self.interaction(emb_x, svd_emb, x_cont)
-        # want to normalize lin_term and inter_term to be in the same scale
+        # to normalize lin_term and inter_term to be in the same scale
         # so that the weights can be comparable
         lin_term_sig = self.sig(lin_term)
         inter_term_sig = self.sig(inter_term)
