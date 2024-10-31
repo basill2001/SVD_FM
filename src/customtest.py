@@ -41,6 +41,8 @@ class Tester:
 
         return final_df
     
+
+
     def svdtest(self):
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
@@ -150,7 +152,6 @@ class Tester:
                 result = self.model.forward(X_cat, X_cont)
             
             topidx = torch.argsort(result, descending=True)[:]
-            # swith tensor to list
             topidx = topidx.tolist()
 
             if customerid not in self.test_org['user_id'].unique():
@@ -159,8 +160,7 @@ class Tester:
             print("customer id: ",customerid, end=" ")
             ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
-            # reorder movie_list
-            ml = ml[topidx]
+            ml = ml[topidx] # reorder movie_list
             cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
             
             # 여기 안본게 포함되어있을 수 있음 이거 처리해줘야함
@@ -179,7 +179,7 @@ class Tester:
             if(len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
                 continue
             print("real product code: ",cur_user_test[:])
-            real_rec=real_rec.tolist()
+            real_rec = real_rec.tolist()
 
             precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
             recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
@@ -220,7 +220,7 @@ class Tester:
             return 1
         else:
             return 0
-        
+    
     def get_reciprocal_rank(self,pred,real):
         for i in range(len(pred)):
             if pred[i] in real:

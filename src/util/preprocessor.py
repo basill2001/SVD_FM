@@ -1,9 +1,11 @@
-from sklearn.calibration import LabelEncoder
-from src.util.negativesampler import NegativeSampler
 import pandas as pd
 import numpy as np
-from src.model.SVD import SVD
+from sklearn.calibration import LabelEncoder
 from copy import deepcopy
+
+from src.util.negativesampler import NegativeSampler
+from src.util.SVD import SVD
+
 
 class Preprocessor:
     """
@@ -13,7 +15,6 @@ class Preprocessor:
                  ui_matrix, cat_columns, cont_columns):
         """
         Constructor for Preprocessor class
-        :param args:  Arguments object
         """
         self.args = args
         self.train_org = train_df.copy(deep=True)
@@ -42,7 +43,7 @@ class Preprocessor:
         return self.cat_columns_temp, self.cont_columns_temp
     
     def get_embedding(self):
-        return self.user_embedding_df,self.item_embedding_df
+        return self.user_embedding_df, self.item_embedding_df
     
     def get_le_dict(self):
         return self.le_dict
@@ -137,8 +138,6 @@ class Preprocessor:
             
             # user_id, item_id 삭제
             cont_columns.remove(['user_id', 'item_id'])
-            cont_columns.remove('user_id')
-            cont_columns.remove('item_id')
 
             cont_train_df = self.cont_train_df[cont_columns]    
             self.args.cont_dims = len(cont_columns)

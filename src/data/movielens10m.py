@@ -40,12 +40,11 @@ class Movielens10m:
         #read movie data
         movie_info=movie_info=pd.read_csv('dataset/ml-10m/movies.dat',sep='::',header=None, names=['movie_id','title','genre'],encoding='latin-1')
 
-        #split genre column into one hot
+        # split genre column into one hot
         genre_list=[]
         for i in range(len(movie_info)):
             genre_list.extend(movie_info['genre'][i].split('|'))
         genre_list=list(set(genre_list))
-        #genre_list.remove('(no genres listed)')
         genre_list
         for i in genre_list:
             movie_info[i]=0
