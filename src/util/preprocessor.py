@@ -16,20 +16,21 @@ class Preprocessor:
         """
         Constructor for Preprocessor class
         """
-        
-        self.args = args
         self.train_org = train_df.copy(deep=True)
         self.preprocess(args, train_df, item_info, user_info, ui_matrix)
-        self.label_encode(args, cat_columns, cont_columns)
+        self.label_encode(args, cat_columns)
         
-        cat_columns.remove('user_id')
-        cat_columns.remove('item_id')
-        self.cat_columns = cat_columns
-        self.cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
+        self.cat_train_df = self.train_df[cat_columns].drop(['user_id', 'item_id'], axis=1)
+
+        self.cat_columns = self.cat_train_df.columns
+        self.cont_columns = cont_columns + self.user_embedding_df.columns.tolist()[1:] + self.item_embedding_df.columns.tolist()[1:]
+        self.cont_train_df = self.train_df[self.cont_columns]
         
+        self.field_dims = np.max(self.cat_train_df, axis=0) + 1
         self.test_df = test_df
         self.item_info = item_info
         self.user_info = user_info
+        self.ui_matrix = ui_matrix
         self.uidf = self.train_df[['user_id', 'item_id']]
         
     
@@ -77,8 +78,8 @@ class Preprocessor:
         return user_emb_included_df, user_embedding_df, item_embedding_df
 
     
-    def label_encode(self, args, cat_columns, cont_columns):
-        self.cont_train_df = self.train_df.drop(cat_columns, axis=1)
+    def label_encode(self, args, cat_columns):
+        # self.cont_train_df = self.train_df[cont_columns]
         # deep copy
         train_df = self.train_df.copy(deep=True)
         
@@ -89,12 +90,13 @@ class Preprocessor:
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
-                    le.fit(train_df[col])
+                    # le.fit(train_df[col])
+                    continue
                 else:
                     train_df[col] = le.fit_transform(train_df[col])
                 self.le_dict[col] = le
-            cat_train_df = train_df[cat_columns].drop(['user_id', 'item_id'], axis=1).to_numpy()[:].astype('int')
-            cont_train_df = self.cont_train_df[cont_columns]
+            # cat_train_df = train_df[cat_columns].drop(['user_id', 'item_id'], axis=1).to_numpy()[:].astype('int')
+            # cont_train_df = self.cont_train_df[cont_columns]
             
         # when we use original embedding, we need to encode user_id and item_id
         else:
@@ -102,11 +104,11 @@ class Preprocessor:
                 le = LabelEncoder()
                 train_df[col] = le.fit_transform(train_df[col])
                 self.le_dict[col] = le
-            cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
-            cont_train_df = self.cont_train_df[cont_columns]
-            
-        self.args.cont_dims = len(cont_columns)
         
-        self.cat_train_df = cat_train_df
-        self.cont_train_df = cont_train_df.to_numpy()[:].astype('float32')
-        self.field_dims = np.max(self.cat_train_df, axis=0) + 1
+        self.train_df = train_df
+            # cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
+            # cont_train_df = self.cont_train_df[self.cont_columns]
+        
+        # self.cat_train_df = pd.DataFrame(cat_train_df, columns=cat_columns)
+        # self.cont_train_df = cont_train_df.to_numpy()[:].astype('float32')
+        # self.field_dims = np.max(self.cat_train_df, axis=0) + 1
