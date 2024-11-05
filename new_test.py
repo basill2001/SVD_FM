@@ -52,7 +52,7 @@ parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negativ
 # parser.add_argument('--auto_lr', type=float, default=0.01, help='autoencoder learning rate')
 # parser.add_argument('--k', type=int, default=10, help='autoencoder k')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
-parser.add_argument('--datatype', type=str, default="frappe",        help='ml100k or ml1m or shopping or goodbook or frappe')
+parser.add_argument('--datatype', type=str, default="frappe",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
@@ -61,7 +61,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 args = parser.parse_args("")
 
 
-def getdata(args):
+def getdata(args) -> Preprocessor:
     
     # get any dataset
     dataset = DataWrapper(args)
@@ -77,11 +77,10 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    data.label_encode()
-    items, conts = data.get_catcont_train()
-    target, c = data.get_target_c()
-    field_dims = data.get_field_dims()
-    uidf = data.uidf.values
+    items, conts = data.cat_train_df, data.cont_train_df
+    target, c = data.target, data.c
+    field_dims = data.field_dims
+    uidf = data.uidf
 
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
     if args.model_type=='fm' and args.embedding_type=='original':

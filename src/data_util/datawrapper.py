@@ -18,8 +18,6 @@ class DataWrapper:
             self.data = Frappe(args)        # 수정완료
         elif args.datatype=="goodbook":
             self.data = GoodBook(args)
-        # elif args.datatype=="shopping":     # 수정필요
-        #     self.data = Shopping(args)
         else:
             raise NotImplementedError
 
@@ -30,10 +28,9 @@ class DataWrapper:
         self.ui_matrix = self.get_ui_matrix()
         return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
 
-    
+    # 행이 user 열이 item인 관계 matrix 생성
     def get_ui_matrix(self):
         train = self.train
-        # 행이 user 열이 item인 관계 matrix 생성
         ui_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
         ui_matrix = ui_matrix.fillna(0)
         ui_matrix = ui_matrix.astype(float)
@@ -46,9 +43,8 @@ class DataWrapper:
         return ui_matrix
     
 
-
-    def get_col_type(self):
-        # 범주형, 연속형을 나누어서 저장
+    # 범주형, 연속형을 나누어서 저장
+    def get_col_type(self): 
         cat_cols = []
         cont_cols = []
         cat_cols.append('user_id')

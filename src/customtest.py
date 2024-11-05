@@ -14,11 +14,11 @@ class Tester:
         self.model = model
 
         self.train_df, self.test_org = data.get_train_test()
-        self.user_df, self.item_df = data.get_user_item_info()
-        self.le_dict = data.get_le_dict()  # le is labelencoder
+        self.user_df, self.item_df = data.user_info, data.item_info
+        self.le_dict = data.le_dict  # le is labelencoder
         self.user_embedding, self.item_embedding = data.get_embedding()
-        self.cat_cols, self.cont_cols = data.get_column_info()        
-        self.train_org = data.get_original_train()
+        self.cat_cols, self.cont_cols = data.cat_columns, data.cont_columns   
+        self.train_org = data.train_org
 
     # to make dataframe with given user_id
     def test_data_generator(self, user_id):
@@ -40,98 +40,11 @@ class Tester:
             final_df['item_id'] = self.le_dict['item_id'].transform(final_df['item_id'])
 
         return final_df
-    
-
-
-    def svdtest(self):
-        train_org = self.train_org.copy(deep=True)
-        for col in train_org.columns:
-            if col=='user_id' or col=='item_id':
-                train_org[col] = self.le_dict[col].transform(train_org[col])
-
-        user_list = self.le_dict['user_id'].classes_
-        self.model.eval()
-        precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
-        
-        for user_id in tqdm.tqdm(user_list[:]):
-
-            temp = self.test_data_generator(user_id)
-            X_cat = temp[self.cat_cols].values
-            X_cat = torch.tensor(X_cat, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
-            X_cont = temp[self.cont_cols].values
-            X_cont = torch.tensor(X_cont, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
-
-            svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
-            X_cont = X_cont[:, :-self.args.num_eigenvector*2]
-            emb_x = self.model.embedding(X_cat)
-
-            if self.args.model_type=='fm':
-                result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            else:
-                result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            
-            topidx = torch.argsort(result,descending=True)[:]
-            topidx = topidx.tolist()
-
-            if user_id not in self.test_org['user_id'].unique():
-                continue
-
-            print("customer id: ",user_id, end=" ")
-            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
-            ml = np.array(ml)
-            # reorder movie_list
-            ml = ml[topidx]
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([user_id])[0]]['item_id'].unique())
-            
-            #  testing needs to be done with item_id that exists in train data
-            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
-            
-            # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
-            
-            print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
-
-            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==user_id])
-            cur_user_test = cur_user_test[:, 1]
-            cur_user_test = np.unique(cur_user_test)
-            cur_user_test = cur_user_test.tolist()
-
-            if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
-                continue
-            print("real product code: ", cur_user_test[:])
-            real_rec = real_rec.tolist()
-
-            precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            hit_rates.append(self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-  
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-        print("average precision: ",np.mean(precisions))
-        # totla user number and total item number
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics = {}
-        metrics['precision'] = np.mean(precisions)
-        metrics['recall'] = np.mean(recalls)
-        metrics['hit_rate'] = np.mean(hit_rates)
-        metrics['reciprocal_rank'] = np.mean(reciprocal_ranks)
-        metrics['dcg'] = np.mean(dcgs)
-
-        return metrics
-
 
     def test(self):
-
         train_org = self.train_org.copy(deep=True)
-        for col in train_org.columns:
-            if col=='user_id' or col=='item_id':
-                train_org[col]=self.le_dict[col].transform(train_org[col])
+        train_org['user_id'] = self.le_dict['user_id'].transform(train_org['user_id'])
+        train_org['item_id'] = self.le_dict['item_id'].transform(train_org['item_id'])
 
         user_list = self.le_dict['user_id'].classes_
         self.model.eval()
@@ -146,7 +59,7 @@ class Tester:
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
     
             if self.args.model_type=='fm':
-                emb_x=self.model.embedding(X_cat)
+                emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
             else:
                 result = self.model.forward(X_cat, X_cont)
@@ -181,30 +94,120 @@ class Tester:
             print("real product code: ",cur_user_test[:])
             real_rec = real_rec.tolist()
 
-            precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            hit_rates.append(self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
+            precision = self.get_precision(real_rec[:self.args.topk], cur_user_test)
+            recall = self.get_recall(real_rec[:self.args.topk], cur_user_test)
+            hit_rate = self.get_hit_rate(real_rec[:self.args.topk], cur_user_test)
+            reciprocal_rank = self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test)
+            dcg = self.get_dcg(real_rec[:self.args.topk],cur_user_test)
+            
+            precisions.append(precision)
+            recalls.append(recall)
+            hit_rates.append(hit_rate)
+            reciprocal_ranks.append(reciprocal_rank)
+            dcgs.append(dcg)
   
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-        print("average precision: ",np.mean(precisions))
-        # totla user number and total item number
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics={}
-        metrics['precision']=np.mean(precisions)
-        metrics['recall']=np.mean(recalls)
-        metrics['hit_rate']=np.mean(hit_rates)
-        metrics['reciprocal_rank']=np.mean(reciprocal_ranks)
-        metrics['dcg']=np.mean(dcgs)
+            # print("precision: ", precision)
+            # print("recall: ", recall)
+            # print("hit rate: ", hit_rate)
+            # print("reciprocal rank: ", reciprocal_rank)
+            # print("dcg: ", dcg)
+        
+        print("average precision: ", np.mean(precisions))
+        print("total user number: ", len(user_list))
+        print("total item number: ", len(self.train_df['item_id'].unique()))
+        metrics = {'precision' : np.mean(precisions), 
+                   'recall' : np.mean(recalls),
+                   'hit_rate' : np.mean(hit_rates),
+                   'reciprocal_rank' : np.mean(reciprocal_ranks),
+                   'dcg' : np.mean(dcgs)}
 
         return metrics
+    
 
+    def svdtest(self):
+        train_org = self.train_org.copy(deep=True)
+        train_org['user_id'] = self.le_dict['user_id'].transform(train_org['user_id'])
+        train_org['item_id'] = self.le_dict['item_id'].transform(train_org['item_id'])
+
+        user_list = self.le_dict['user_id'].classes_
+        self.model.eval()
+        precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
+        
+        for user_id in tqdm.tqdm(user_list[:]):
+
+            temp = self.test_data_generator(user_id)
+            X_cat = temp[self.cat_cols].values
+            X_cat = torch.tensor(X_cat, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
+            X_cont = temp[self.cont_cols].values
+            X_cont = torch.tensor(X_cont, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
+
+            svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
+            X_cont = X_cont[:, :-self.args.num_eigenvector*2]
+            emb_x = self.model.embedding(X_cat)
+
+            if self.args.model_type=='fm':
+                result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+            else: # model_type=='deepfm'
+                result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+            
+            topidx = torch.argsort(result,descending=True)[:]
+            topidx = topidx.tolist()
+
+            if user_id not in self.test_org['user_id'].unique():
+                continue
+
+            print("customer id: ", user_id, end=" ")
+            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
+            ml = np.array(ml)
+            ml = ml[topidx] # reorder movie_list
+            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([user_id])[0]]['item_id'].unique())
+            
+            # testing needs to be done with item_id that exists in train data
+            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
+            
+            # erase the things in ml that are in cur_userslist without changing the order
+            real_rec = np.setdiff1d(ml, cur_userslist, assume_unique=True)
+            
+            print("top {} recommended product code: ".format(self.args.topk), real_rec[:self.args.topk])
+
+            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==user_id])
+            cur_user_test = cur_user_test[:, 1]
+            cur_user_test = np.unique(cur_user_test)
+            cur_user_test = cur_user_test.tolist()
+
+            if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
+                continue
+            print("real product code: ", cur_user_test[:])
+            real_rec = real_rec.tolist()
+
+            precision = self.get_precision(real_rec[:self.args.topk], cur_user_test)
+            recall = self.get_recall(real_rec[:self.args.topk], cur_user_test)
+            hit_rate = self.get_hit_rate(real_rec[:self.args.topk], cur_user_test)
+            reciprocal_rank = self.get_reciprocal_rank(real_rec[:self.args.topk], cur_user_test)
+            dcg = self.get_dcg(real_rec[:self.args.topk], cur_user_test)
+
+            precisions.append(precision)
+            recalls.append(recall)
+            hit_rates.append(hit_rate)
+            reciprocal_ranks.append(reciprocal_rank)
+            dcgs.append(dcg)
+  
+            # print("precision: ", precision)
+            # print("recall: ", recall)
+            # print("hit rate: ", hit_rate)
+            # print("reciprocal rank: ", reciprocal_rank)
+            # print("dcg: ", dcg)
+        
+        print("average precision: ", np.mean(precisions))
+        print("total user number: ", len(user_list))
+        print("total item number: ", len(self.train_df['item_id'].unique()))
+        metrics = {'precision' : np.mean(precisions),
+                   'recall' : np.mean(recalls),
+                   'hit_rate' : np.mean(hit_rates),
+                   'reciprocal_rank' : np.mean(reciprocal_ranks),
+                   'dcg' : np.mean(dcgs)}
+
+        return metrics
     # metric 함수
     def get_precision(self,pred,real):
         precision=len(set(pred).intersection(set(real)))/len(pred)

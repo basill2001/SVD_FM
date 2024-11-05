@@ -11,7 +11,6 @@ class Movielens1m:
         train,test=self.train_test_getter()
         movie_info=self.movie_getter()
         user_info=self.user_getter()
-        #ui_matrix=self.get_user_item_matrix()
 
         # change column names movie_id to item_id
         train=train.rename(columns={'movie_id':'item_id'})

@@ -13,7 +13,6 @@ class Frappe:
         self.test=self.test.rename(columns={'item':'item_id'})
         movie_info=self.movie_getter()
         user_info=self.user_getter()
-        #ui_matrix=self.get_user_item_matrix()
 
         # change column names movie_id to item_id
 
