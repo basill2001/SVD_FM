@@ -1,13 +1,13 @@
-import numpy as np
-import torch
-import json
+# import numpy as np
+# import torch
 import argparse
 import time
-from copy import deepcopy
+# from copy import deepcopy
 
+
+# from sklearn.preprocessing import LabelEncoder
+# from torch.utils.data import Dataset
 import pytorch_lightning as pl
-from sklearn.preprocessing import LabelEncoder
-from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 
 from src.util.negativesampler import NegativeSampler
@@ -32,7 +32,7 @@ parser.add_argument('--train_ratio', type=float, default=0.7,      help='trainin
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
 # parser.add_argument('--num_epochs_ae', type=int, default=300,    help='Number of epochs')
-parser.add_argument('--num_epochs_training', type=int, default=1,  help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=100,         help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 # parser.add_argument('--ae_batch_size', type=int, default=256, help='Batch size for autoencoder')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
@@ -43,8 +43,8 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or original')
-parser.add_argument('--model_type', type=str, default='deepfm',    help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='SVD',        help='SVD or original')
+parser.add_argument('--model_type', type=str, default='deepfm',             help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')

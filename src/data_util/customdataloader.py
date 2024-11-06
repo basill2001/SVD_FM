@@ -1,7 +1,8 @@
 import torch.utils.data as data_utils
+import numpy as np
 
 class CustomDataLoader(data_utils.Dataset):
-    def __init__(self, x, cons, y, c) -> None:
+    def __init__(self, x: np.ndarray, cons: np.ndarray, y: np.ndarray, c: np.ndarray) -> None:
         self.x = x
         self.cons = cons
         self.y = y
