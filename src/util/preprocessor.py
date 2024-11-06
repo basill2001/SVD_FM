@@ -137,7 +137,8 @@ class Preprocessor:
             cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
             
             # user_id, item_id 삭제
-            cont_columns.remove(['user_id', 'item_id'])
+            cont_columns.remove('user_id')
+            cont_columns.remove('item_id')
 
             cont_train_df = self.cont_train_df[cont_columns]    
             self.args.cont_dims = len(cont_columns)
