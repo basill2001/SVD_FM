@@ -43,7 +43,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='SVD',   help='SVD or original')
+parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or original')
 parser.add_argument('--model_type', type=str, default='fm',        help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
@@ -52,13 +52,10 @@ parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negativ
 # parser.add_argument('--auto_lr', type=float, default=0.01, help='autoencoder learning rate')
 # parser.add_argument('--k', type=int, default=10, help='autoencoder k')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
-parser.add_argument('--datatype', type=str, default="frappe",      help='ml100k or ml1m or shopping or goodbook or frappe')
+parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
-
-
-args = parser.parse_args("")
 
 
 def getdata(args) -> Preprocessor:
@@ -66,12 +63,12 @@ def getdata(args) -> Preprocessor:
     # get any dataset
     dataset = DataWrapper(args)
 
-    train_df, test, item_info, user_info, ui_matrix = dataset.get_data()
+    train_df, test_df, user_info, item_info, ui_matrix = dataset.get_data()
     cat_cols, cont_cols = dataset.get_col_type()
     # preprocessor is a class that preprocesses dataframes and returns
     # : train_df, test_df, item_info, user_info, useritem_matrix, cat_columns, cont_columns, label_encoders, user_embedding, item_embedding
-    preprocessor = Preprocessor(args, train_df, test, user_info, item_info, ui_matrix, cat_cols, cont_cols)
-
+    preprocessor = Preprocessor(args, train_df, test_df, user_info, item_info, 
+                                ui_matrix, cat_cols, cont_cols)
     return preprocessor
 
 
@@ -81,6 +78,7 @@ def trainer(args, data: Preprocessor):
     target, c = data.target, data.c
     field_dims = data.field_dims
     uidf = data.uidf
+    args.cont_dims = len(data.cont_columns)
 
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
     if args.model_type=='fm' and args.embedding_type=='original':
@@ -119,13 +117,13 @@ def trainer(args, data: Preprocessor):
 if __name__=='__main__':
     args = parser.parse_args("")
     results = {}
-    data_info = getdata(args)
+    preprocessor = getdata(args)
 
     print('model type is', args.model_type)
     print('embedding type is', args.embedding_type)
-    model, timeee = trainer(args, data_info)
+    model, timeee = trainer(args, preprocessor)
     test_time = time.time()
-    tester = Tester(args, model, data_info)
+    tester = Tester(args, model, preprocessor)
 
     if args.embedding_type=='SVD':
         result = tester.svdtest()

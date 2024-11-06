@@ -20,18 +20,21 @@ class Preprocessor:
         self.preprocess(args, train_df, item_info, user_info, ui_matrix)
         self.label_encode(args, cat_columns)
         
-        self.cat_train_df = self.train_df[cat_columns].drop(['user_id', 'item_id'], axis=1)
+        if args.embedding_type=='SVD':
+            cat_columns.remove('user_id')
+            cat_columns.remove('item_id')
 
-        self.cat_columns = self.cat_train_df.columns
+        self.cat_columns = cat_columns
+        self.cat_train_df = self.train_df[self.cat_columns].to_numpy()[:].astype('int')
         self.cont_columns = cont_columns + self.user_embedding_df.columns.tolist()[1:] + self.item_embedding_df.columns.tolist()[1:]
-        self.cont_train_df = self.train_df[self.cont_columns]
+        self.cont_train_df = self.train_df[self.cont_columns].to_numpy()[:].astype('float32')
         
         self.field_dims = np.max(self.cat_train_df, axis=0) + 1
         self.test_df = test_df
         self.item_info = item_info
         self.user_info = user_info
         self.ui_matrix = ui_matrix
-        self.uidf = self.train_df[['user_id', 'item_id']]
+        self.uidf = self.train_df[['user_id', 'item_id']].to_numpy()[:].astype('float32')
         
     
     def get_original_train(self):
@@ -106,9 +109,3 @@ class Preprocessor:
                 self.le_dict[col] = le
         
         self.train_df = train_df
-            # cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
-            # cont_train_df = self.cont_train_df[self.cont_columns]
-        
-        # self.cat_train_df = pd.DataFrame(cat_train_df, columns=cat_columns)
-        # self.cont_train_df = cont_train_df.to_numpy()[:].astype('float32')
-        # self.field_dims = np.max(self.cat_train_df, axis=0) + 1

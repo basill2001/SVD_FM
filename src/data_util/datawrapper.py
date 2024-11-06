@@ -26,29 +26,13 @@ class DataWrapper:
 
     def get_data(self):
         self.ui_matrix = self.get_ui_matrix()
-        return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
-
-    # 행이 user 열이 item인 관계 matrix 생성
-    def get_ui_matrix(self):
-        train = self.train
-        ui_matrix = train.pivot_table(index='user_id',columns='item_id',values='rating')
-        ui_matrix = ui_matrix.fillna(0)
-        ui_matrix = ui_matrix.astype(float)
-        # 별점이 3 이상일 경우 1로 설정
-        ui_matrix[ui_matrix >= 3] = 1
-        ui_matrix[ui_matrix < 3]  = 0
-        ui_matrix = ui_matrix.to_numpy()
-        ui_matrix = ui_matrix.astype(float)
-
-        return ui_matrix
-    
+        
+        return self.train, self.test, self.user_info, self.item_info, self.ui_matrix
 
     # 범주형, 연속형을 나누어서 저장
     def get_col_type(self): 
-        cat_cols = []
+        cat_cols = ['user_id', 'item_id']
         cont_cols = []
-        cat_cols.append('user_id')
-        cat_cols.append('item_id')
         
         for col in self.item_info.columns:
             if col=='item_id':
@@ -71,3 +55,18 @@ class DataWrapper:
                 cont_cols.append(col)
     
         return cat_cols, cont_cols
+        
+    # 행이 user 열이 item인 관계 matrix 생성
+    def get_ui_matrix(self):
+        train = self.train
+        ui_matrix = train.pivot_table(index='user_id', columns='item_id', values='rating')
+        ui_matrix = ui_matrix.fillna(0)
+        ui_matrix = ui_matrix.astype(float)
+        # 별점이 3 이상일 경우 1로 설정
+        threshold = max(train['rating'])/2
+        ui_matrix[ui_matrix >= threshold] = 1
+        ui_matrix[ui_matrix < threshold]  = 0
+        ui_matrix = ui_matrix.to_numpy()
+        ui_matrix = ui_matrix.astype(float)
+
+        return ui_matrix

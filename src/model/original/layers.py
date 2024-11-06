@@ -25,7 +25,7 @@ class MLP(nn.Module):
 
 class FeatureEmbedding(nn.Module):
 
-    def __init__(self,args,field_dims):
+    def __init__(self, args, field_dims):
         super(FeatureEmbedding, self).__init__()
         self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
         self.field_dims = field_dims

@@ -12,7 +12,6 @@ class SVDDataloader(data_utils.Dataset):
         self.c = c
         self.ui = ui
         
-        #self.emb_x=emb_x
         super().__init__()
     def __len__(self):
         return len(self.x)

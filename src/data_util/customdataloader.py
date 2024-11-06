@@ -13,4 +13,4 @@ class CustomDataLoader(data_utils.Dataset):
         return len(self.x)
 
     def __getitem__(self, index):
-        return self.x[index], self.cons[index], self.y[index], self.c[index]
+        return self.x[index], self.cons[index], self.y.iloc[index], self.c.iloc[index]
