@@ -12,7 +12,7 @@ class FM(pl.LightningModule):
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
-        self.interaction = FM_Interaction(args,field_dims)
+        self.interaction = FM_Interaction(args)
         self.bceloss = nn.BCEWithLogitsLoss() # since BCEWith logits is used, we don't need to add sigmoid layer in the end
         self.lr = args.lr
         self.args = args
@@ -30,17 +30,15 @@ class FM(pl.LightningModule):
             reg += torch.norm(param)**2
         return reg*self.args.weight_decay
 
-    def loss(self, y_pred, y_true,c_values):
+    def loss(self, y_pred, y_true, c_values):
         # calculate weighted mse with l2 regularization
-        # mse = (y_pred - y_true.float()) ** 2
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
-        #l2_reg = torch.norm(self.w)**2 + torch.norm(self.v)**2
-        loss_y = weighted_bce.mean() +self.l2norm()#+ self.args.weight_decay * l2_reg
+        loss_y = weighted_bce.mean() +self.l2norm()
 
         return loss_y 
     
-    def forward(self, x,x_cont,emb_x):
+    def forward(self, x, x_cont, emb_x):
         # FM part loss with interaction terms
         # x: batch_size * num_features
         lin_term = self.linear(x,x_cont)
