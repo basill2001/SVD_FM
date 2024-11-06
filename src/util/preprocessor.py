@@ -26,6 +26,7 @@ class Preprocessor:
         self.cat_columns = cat_columns
         self.cont_columns = cont_columns
         self.preprocess()
+        print("Hello World")
     
     def get_original_train(self):
         return self.train_org

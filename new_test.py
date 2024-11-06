@@ -32,7 +32,7 @@ parser.add_argument('--train_ratio', type=float, default=0.7,      help='trainin
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
 # parser.add_argument('--num_epochs_ae', type=int, default=300,    help='Number of epochs')
-parser.add_argument('--num_epochs_training', type=int, default=500,help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=1,  help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 # parser.add_argument('--ae_batch_size', type=int, default=256, help='Batch size for autoencoder')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')

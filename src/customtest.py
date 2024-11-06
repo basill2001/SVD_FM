@@ -140,7 +140,7 @@ class Tester:
         for customerid in tqdm.tqdm(user_list[:]):
 
             temp = self.test_data_generator(customerid)
-            X_cat = temp[self.cat_cols].value
+            X_cat = temp[self.cat_cols].values
             X_cat = torch.tensor(X_cat, dtype=torch.int64)
             X_cont = temp[self.cont_cols].values
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
