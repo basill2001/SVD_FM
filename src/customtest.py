@@ -13,10 +13,10 @@ class Tester:
         self.args = args
         self.model = model
 
-        self.train_df, self.test_org = data.get_train_test()
+        self.train_df, self.test_org = data.train_df, data.train_org
         self.user_df, self.item_df = data.user_info, data.item_info
         self.le_dict = data.le_dict  # le is labelencoder
-        self.user_embedding, self.item_embedding = data.get_embedding()
+        self.user_embedding, self.item_embedding = data.user_embedding_df, data.item_embedding_df
         self.cat_cols, self.cont_cols = data.cat_columns, data.cont_columns   
         self.train_org = data.train_org
 
@@ -91,8 +91,8 @@ class Tester:
 
             if(len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
                 continue
-            print("real product code: ",cur_user_test[:])
-            real_rec = real_rec.tolist()
+            # print("real product code: ",cur_user_test[:])
+            # real_rec = real_rec.tolist()
 
             precision = self.get_precision(real_rec[:self.args.topk], cur_user_test)
             recall = self.get_recall(real_rec[:self.args.topk], cur_user_test)

@@ -32,7 +32,7 @@ parser.add_argument('--train_ratio', type=float, default=0.7,      help='trainin
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
 # parser.add_argument('--num_epochs_ae', type=int, default=300,    help='Number of epochs')
-parser.add_argument('--num_epochs_training', type=int, default=1,  help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=100,  help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 # parser.add_argument('--ae_batch_size', type=int, default=256, help='Batch size for autoencoder')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
@@ -43,7 +43,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or original')
+parser.add_argument('--embedding_type', type=str, default='SVD',   help='SVD or original')
 parser.add_argument('--model_type', type=str, default='fm',        help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
@@ -55,7 +55,7 @@ parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number 
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
-parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
+parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file; choose from 147, 148, 149')
 
 
 def getdata(args) -> Preprocessor:

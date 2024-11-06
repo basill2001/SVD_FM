@@ -93,13 +93,10 @@ class Preprocessor:
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
-                    # le.fit(train_df[col])
-                    continue
+                    le.fit(train_df[col])
                 else:
                     train_df[col] = le.fit_transform(train_df[col])
                 self.le_dict[col] = le
-            # cat_train_df = train_df[cat_columns].drop(['user_id', 'item_id'], axis=1).to_numpy()[:].astype('int')
-            # cont_train_df = self.cont_train_df[cont_columns]
             
         # when we use original embedding, we need to encode user_id and item_id
         else:
