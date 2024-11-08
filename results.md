@@ -30,11 +30,13 @@ Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=
 |time     |108.48559141159058    |
 ## 4.
 Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`  
-|metrics| value|
-|---|---|
-|precision|0.2724770642201835   |
-|recall   |0.03526023909202231  |
-|hit rate |0.6100917431192661   |
-|rec rank |0.4261085626911315   |
-|dcg      |0.8427053911790566   |
-|time     |118.83392763137817   |
+|metrics| value| value<sup>[1](#footnote_1)</sup>|
+|---    |---   |---      |
+|precision|0.2724770642201835   | 0.5114678899082569    |
+|recall   |0.03526023909202231  | 0.09174844697646069   |
+|hit rate |0.6100917431192661   | 0.9174311926605505    |
+|rec rank |0.4261085626911315   | 0.7372324159021407    |
+|dcg      |0.8427053911790566   | 1.5751689006246197    |
+|time     |118.83392763137817   | 119.92192196846008    |
+---
+<a name='footnote_1'>1</a> : ui_matrix 순서 바꿈
