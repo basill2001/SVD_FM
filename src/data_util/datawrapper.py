@@ -40,8 +40,7 @@ class DataWrapper:
         # 별점이 3 이상일 경우 1로 설정
         ui_matrix[ui_matrix < 3]  = 0
         ui_matrix[ui_matrix >= 3] = 1
-        ui_matrix = ui_matrix.to_numpy()
-        ui_matrix = ui_matrix.astype(float)
+        ui_matrix = ui_matrix.to_numpy().astype(float)
 
         return ui_matrix
     
