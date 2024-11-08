@@ -180,11 +180,13 @@ class Tester:
             print("real product code: ", cur_user_test[:])
             real_rec = real_rec.tolist()
 
-            precision = self.get_precision(real_rec[:self.args.topk], cur_user_test)
-            recall = self.get_recall(real_rec[:self.args.topk], cur_user_test)
-            hit_rate = self.get_hit_rate(real_rec[:self.args.topk], cur_user_test)
-            reciprocal_rank = self.get_reciprocal_rank(real_rec[:self.args.topk], cur_user_test)
-            dcg = self.get_dcg(real_rec[:self.args.topk], cur_user_test)
+            pred = real_rec[:self.args.topk]
+            real = cur_user_test
+            precision = self.get_precision(pred, real)
+            recall = self.get_recall(pred, real)
+            hit_rate = self.get_hit_rate(pred, real)
+            reciprocal_rank = self.get_reciprocal_rank(pred, real)
+            dcg = self.get_dcg(pred, real)
 
             precisions.append(precision)
             recalls.append(recall)
@@ -208,31 +210,31 @@ class Tester:
                    'dcg' : np.mean(dcgs)}
 
         return metrics
+    
     # metric 함수
-    def get_precision(self,pred,real):
-        precision=len(set(pred).intersection(set(real)))/len(pred)
+    def get_precision(self, pred, real):
+        precision = len(set(pred).intersection(set(real)))/len(pred)
         return precision
     
-    def get_recall(self,pred,real):
-        recall=len(set(pred).intersection(set(real)))/len(real)
-        
+    def get_recall(self, pred, real):
+        recall = len(set(pred).intersection(set(real)))/len(real)
         return recall
     
-    def get_hit_rate(self,pred,real):
+    def get_hit_rate(self, pred, real):
         if len(set(pred).intersection(set(real)))>0:
             return 1
         else:
             return 0
     
-    def get_reciprocal_rank(self,pred,real):
+    def get_reciprocal_rank(self, pred, real):
         for i in range(len(pred)):
             if pred[i] in real:
                 return 1/(i+1)
         return 0
     
-    def get_dcg(self,pred,real):
-        dcg=0
+    def get_dcg(self, pred, real):
+        dcg = 0
         for i in range(len(pred)):
             if pred[i] in real:
-                dcg+=1/np.log2(i+2)
+                dcg += 1/np.log2(i+2)
         return dcg
