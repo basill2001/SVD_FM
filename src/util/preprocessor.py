@@ -27,7 +27,6 @@ class Preprocessor:
         self.cat_columns = cat_columns
         self.cont_columns = cont_columns
         self.preprocess()
-        print("Hello World")
     
     def get_original_train(self) -> pd.DataFrame:
         return self.train_org
@@ -150,18 +149,18 @@ class Preprocessor:
         # when we use original embedding, we need to encode user_id and item_id
         else:
             for col in cat_columns:
-                le=LabelEncoder()
-                train_df[col]=le.fit_transform(train_df[col])
-                self.le_dict[col]=le
+                le = LabelEncoder()
+                train_df[col] = le.fit_transform(train_df[col])
+                self.le_dict[col] = le
             cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
             cont_train_df = self.cont_train_df[cont_columns]
             self.args.cont_dims = len(cont_columns)
 
         self.cat_columns_temp = cat_columns
         self.cont_columns_temp = cont_columns
-        self.uidf = train_df[['user_id','item_id']]
+        self.uidf = train_df[['user_id', 'item_id']]
         self.cat_train_df_temp = cat_train_df
         self.cont_train_df_temp = cont_train_df.to_numpy()[:].astype('float32')
         
-        self.field_dims = np.max(self.cat_train_df_temp,axis=0)+1
+        self.field_dims = np.max(self.cat_train_df_temp, axis=0) + 1
         self.train_df_temp = train_df.copy(deep=True)
