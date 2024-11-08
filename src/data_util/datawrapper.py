@@ -62,11 +62,11 @@ class DataWrapper:
         ui_matrix = train.pivot_table(index='user_id', columns='item_id', values='rating')
         ui_matrix = ui_matrix.fillna(0)
         ui_matrix = ui_matrix.astype(float)
+        
         # 별점이 3 이상일 경우 1로 설정
         threshold = max(train['rating'])/2
-        ui_matrix[ui_matrix >= threshold] = 1
         ui_matrix[ui_matrix < threshold]  = 0
-        ui_matrix = ui_matrix.to_numpy()
-        ui_matrix = ui_matrix.astype(float)
+        ui_matrix[ui_matrix >= threshold] = 1
+        ui_matrix = ui_matrix.to_numpy().astype(float)
 
         return ui_matrix
