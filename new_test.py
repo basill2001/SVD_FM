@@ -1,5 +1,3 @@
-# import numpy as np
-# import torch
 import argparse
 import time
 # from copy import deepcopy
@@ -60,6 +58,15 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 args = parser.parse_args("")
 
+# seed 값 고정
+def setseed(seed=42):
+    import torch
+    import random
+    import numpy as np
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 def getdata(args):
     
@@ -119,6 +126,7 @@ def trainer(args, data: Preprocessor):
 
 if __name__=='__main__':
     args = parser.parse_args("")
+    setseed()
     results = {}
     data_info = getdata(args)
 
