@@ -77,25 +77,14 @@ class Preprocessor:
 
     
     def merge_embedding(self, user_embedding, item_embedding, ns_sampled_df):
-        user_embedding_df = pd.DataFrame()
-        item_embedding_df = pd.DataFrame()
+        user_ids = pd.Series(sorted(ns_sampled_df['user_id'].unique()))
+        item_ids = pd.Series(sorted(ns_sampled_df['item_id'].unique()))
+        
+        user_embedding_df = pd.concat([user_ids, pd.DataFrame(user_embedding)], axis=1)
+        item_embedding_df = pd.concat([item_ids, pd.DataFrame(item_embedding)], axis=1)
 
-        user_embedding_df['user_id'] = sorted(ns_sampled_df['user_id'].unique())
-        item_embedding_df['item_id'] = sorted(ns_sampled_df['item_id'].unique())
-
-        user_embedding_columns = []
-        item_embedding_columns = []
-
-        for i in range(user_embedding.shape[1]):
-            user_embedding_columns.append('user_embedding_'+str(i))
-        for i in range(item_embedding.shape[1]):
-            item_embedding_columns.append('item_embedding_'+str(i))
-
-        ue_df = pd.DataFrame(user_embedding, columns=user_embedding_columns)
-        ie_df = pd.DataFrame(item_embedding, columns=item_embedding_columns)
-
-        user_embedding_df = pd.concat([user_embedding_df, ue_df], axis=1)
-        item_embedding_df = pd.concat([item_embedding_df, ie_df], axis=1)
+        user_embedding_df.columns = ['user_id'] + [f'user_embedding_{i}' for i in range(user_embedding.shape[1])]
+        item_embedding_df.columns = ['item_id'] + [f'item_embedding_{i}' for i in range(item_embedding.shape[1])]
 
         movie_emb_included_df = pd.concat([ns_sampled_df.reset_index(drop=True), 
                                            item_embedding_df.set_index('item_id').reindex(ns_sampled_df['item_id'].values).reset_index(drop=True)], 
