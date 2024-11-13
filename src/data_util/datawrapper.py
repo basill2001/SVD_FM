@@ -29,7 +29,6 @@ class DataWrapper:
     def get_data(self):
         self.ui_matrix = self.get_ui_matrix()
         return self.train, self.test, self.item_info, self.user_info, self.ui_matrix
-
     
     def get_ui_matrix(self):
         train = self.train
@@ -44,7 +43,6 @@ class DataWrapper:
 
         return ui_matrix
     
-
 
     def get_col_type(self):
         # 범주형, 연속형을 나누어서 저장

@@ -41,33 +41,27 @@ class FM(pl.LightningModule):
     def forward(self, x, x_cont, emb_x):
         # FM part loss with interaction terms
         # x: batch_size * num_features
-        lin_term = self.linear(x,x_cont)
+        lin_term = self.linear(x, x_cont)
         
         #embedding=self.embedding(x)
 
-        inter_term,cont_emb = self.interaction(emb_x,x_cont)
-        lin_term_sig=self.sig(lin_term)
-        inter_term_sig=self.sig(inter_term)
-        outs=torch.cat((lin_term_sig,inter_term_sig),1)
-        x=self.last_linear(outs)
-
-        
-        x=x.squeeze(1)
-        return x, cont_emb,inter_term,lin_term  
+        inter_term,cont_emb = self.interaction(emb_x, x_cont)
+        lin_term_sig = self.sig(lin_term)
+        inter_term_sig = self.sig(inter_term)
+        outs = torch.cat((lin_term_sig, inter_term_sig), 1)
+        x = self.last_linear(outs)
+        x = x.squeeze(1)
+        return x, cont_emb, inter_term, lin_term  
 
     
     def training_step(self, batch, batch_idx):
-        x,x_cont,y,c_values=batch
-
-
-        embed_x=self.embedding(x)
-        y_pred,_,_,_=self.forward(x,x_cont,embed_x)
-        
-        loss_y=self.loss(y_pred, y,c_values)
+        x, x_cont, y, c_values=batch
+        embed_x = self.embedding(x)
+        y_pred, _, _, _ = self.forward(x, x_cont, embed_x)
+        loss_y = self.loss(y_pred, y, c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
     
     def configure_optimizers(self) ->Any:
-
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer

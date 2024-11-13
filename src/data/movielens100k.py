@@ -1,11 +1,11 @@
 import pandas as pd
 
 class Movielens100k:
-    def __init__(self, data_dir, data_file,fold):
+    def __init__(self, data_dir, data_file, fold):
 
         self.data_dir = data_dir
         self.data_file = data_file
-        self.fold=fold #should be integer
+        self.fold = fold #should be integer
 
     def data_getter(self):
         
@@ -21,8 +21,7 @@ class Movielens100k:
         # change column names movie_id to item_id
         # add column item_id to movie_info
         movie_info.rename(columns={'movie_id':'item_id'}, inplace=True)
-
-
+        
         return self.train, self.test, movie_info, user_info
     
     def movie_getter(self):

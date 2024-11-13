@@ -8,14 +8,14 @@ class Movielens1m:
     def data_getter(self):
         
         #train, test loading for each fold
-        train,test=self.train_test_getter()
-        movie_info=self.movie_getter()
-        user_info=self.user_getter()
+        train,test = self.train_test_getter()
+        movie_info = self.movie_getter()
+        user_info = self.user_getter()
         #ui_matrix=self.get_user_item_matrix()
 
         # change column names movie_id to item_id
-        train=train.rename(columns={'movie_id':'item_id'})
-        test=test.rename(columns={'movie_id':'item_id'})
+        train = train.rename(columns={'movie_id':'item_id'})
+        test = test.rename(columns={'movie_id':'item_id'})
         # add column item_id to movie_info
         movie_info.rename(columns={'movie_id':'item_id'},inplace=True)
 

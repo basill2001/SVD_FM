@@ -8,7 +8,6 @@ from src.model.original.fm import FM
 from src.model.original.layers import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
 
 
-
 class DeepFM(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(DeepFM, self).__init__()
@@ -26,8 +25,7 @@ class DeepFM(pl.LightningModule):
         self.lastlinear = nn.Linear(3,1)
 
     def l2norm(self):
-
-        reg=0
+        reg = 0
         for param in self.linear.parameters():
             reg += torch.norm(param)**2
         for param in self.embedding.parameters():
@@ -45,16 +43,13 @@ class DeepFM(pl.LightningModule):
 
     def loss(self, y_pred, y_true, c_values):
         mse =self.bceloss(y_pred, y_true.float())
-        # bce=self.bceloss(y_pred,y_true.float())
         weighted_bce = c_values * mse
-        #l2_reg = torch.norm(self.w) + torch.norm(self.v) # L2 regularization
-
-        loss_y = weighted_bce.mean() #+ self.args.weight_decay * l2_reg
+        loss_y = weighted_bce.mean()
         loss_y += self.l2norm()
 
         return loss_y
     
-    def forward(self, x,x_cont):
+    def forward(self, x, x_cont):
         # FM part, here, x_hat means another arbritary input of data, for combining the results. 
         
         embed_x = self.embedding(x)
