@@ -31,30 +31,6 @@ class Preprocessor:
     def get_original_train(self) -> pd.DataFrame:
         return self.train_org
 
-    def get_user_item_info(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        return self.user_info, self.item_info # returns two pd.DataFrame
-
-    def get_catcont_train(self) -> Tuple[np.ndarray, np.ndarray]: # get categorical and continuous train data
-        return self.cat_train_df_temp, self.cont_train_df_temp
-    
-    def get_train_test(self) -> Tuple[pd.DataFrame, pd.DataFrame]: # get train and test data
-        return self.train_df_temp, self.test_df
-    
-    def get_column_info(self) -> Tuple[list, list]: # get column information
-        return self.cat_columns_temp, self.cont_columns_temp
-    
-    def get_embedding(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        return self.user_embedding_df, self.item_embedding_df
-    
-    def get_le_dict(self) -> dict:
-        return self.le_dict
-    
-    def get_field_dims(self) -> np.ndarray:
-        return self.field_dims
-
-    def get_target_c(self) -> Tuple[np.ndarray, np.ndarray]:
-        return self.target, self.c
-
     def preprocess(self, train_df, item_info, user_info) -> None:
         """
         Method to preprocess the input data
@@ -96,7 +72,7 @@ class Preprocessor:
         return user_emb_included_df, user_embedding_df, item_embedding_df
 
     
-    def label_encode(self):
+    def label_encode(self, cat_columns):
         self.cont_train_df = self.train_df.drop(self.cat_columns, axis=1)
         # deep copy
         train_df = self.train_df.copy(deep=True)
