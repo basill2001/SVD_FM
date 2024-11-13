@@ -126,6 +126,10 @@ class Preprocessor:
         self.le_dict = {}
         # when we use SVD, we don't need to embedd user_id and item_id
         if self.args.embedding_type=='SVD':
+            # cat_columns 
+            #  ['user_id', 'item_id', 'unknown', 'Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 
+            #   'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 
+            #   'Thriller', 'War', 'Western', 'age', 'gender', 'occupation']
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
@@ -135,13 +139,37 @@ class Preprocessor:
                 self.le_dict[col] = le
     
             cat_train_df = train_df[cat_columns].drop(['user_id','item_id'], axis=1).to_numpy()[:].astype('int')
+            # array([[ 0,  0,  0, ...,  2,  1, 19],
+            #        [ 0,  1,  1, ...,  2,  1, 19],
+            #        [ 0,  0,  0, ...,  2,  1, 19],
+            #         ...,
+            #        [ 0,  0,  0, ...,  1,  1, 18],
+            #        [ 0,  0,  0, ...,  1,  1, 18],
+            #        [ 0,  1,  0, ...,  1,  1, 18]]
             cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
+            # ['user_id', 'user_embedding_0', 'user_embedding_1', 'user_embedding_2', 'user_embedding_3', 'user_embedding_4', 
+            #  'user_embedding_5', 'user_embedding_6', 'user_embedding_7', 'user_embedding_8', 'user_embedding_9', 'user_embedding_10', 
+            #  'user_embedding_11', 'user_embedding_12', 'user_embedding_13', 'user_embedding_14', 'user_embedding_15', 
+            #  'item_id', 'item_embedding_0', 'item_embedding_1', 'item_embedding_2', 'item_embedding_3', 'item_embedding_4', 'item_embedding_5', 'item_embedding_6', 
+            #  'item_embedding_7', 'item_embedding_8', 'item_embedding_9', 'item_embedding_10', 'item_embedding_11', 'item_embedding_12', 'item_embedding_13', 
+            #  'item_embedding_14', 'item_embedding_15']
             
             # user_id, item_id 삭제
             cont_columns.remove('user_id')
             cont_columns.remove('item_id')
+            # ['user_embedding_0', 'user_embedding_1', 'user_embedding_2', 'user_embedding_3', 'user_embedding_4', 'user_embedding_5', 'user_embedding_6', 'user_embedding_7', 
+            #  'user_embedding_8', 'user_embedding_9', 'user_embedding_10', 'user_embedding_11', 'user_embedding_12', 'user_embedding_13', 'user_embedding_14', 'user_embedding_15', 
+            #  'item_embedding_0', 'item_embedding_1', 'item_embedding_2', 'item_embedding_3', 'item_embedding_4', 'item_embedding_5', 'item_embedding_6', 'item_embedding_7', 
+            #  'item_embedding_8', 'item_embedding_9', 'item_embedding_10', 'item_embedding_11', 'item_embedding_12', 'item_embedding_13', 'item_embedding_14', 'item_embedding_15']
 
-            cont_train_df = self.cont_train_df[cont_columns]    
+            cont_train_df = self.cont_train_df[cont_columns]
+              #         user_embedding_0  user_embedding_1  user_embedding_2  user_embedding_3  user_embedding_4  ...  item_embedding_11  item_embedding_12  item_embedding_13  item_embedding_14  item_embedding_15
+              # 0               4.856453         -0.399200          0.575379         -1.154136         -0.699106  ...          -0.001916          -0.041549           0.068542          -0.018827          -0.016799
+              # 1               4.856453         -0.399200          0.575379         -1.154136         -0.699106  ...          -0.004488          -0.009219           0.010461           0.023436           0.033961
+              # 2               4.856453         -0.399200          0.575379         -1.154136         -0.699106  ...           0.001123          -0.056571           0.006716          -0.026319           0.047488
+              # 3               4.856453         -0.399200          0.575379         -1.154136         -0.699106  ...           0.054508           0.057809          -0.063818           0.027591          -0.070931
+              # 4               4.856453         -0.399200          0.575379         -1.154136         -0.699106  ...           0.016208           0.040225          -0.000089           0.051143          -0.041623
+              # [374829 rows x 32 columns]
             self.args.cont_dims = len(cont_columns)
             cat_columns.remove('user_id')
             cat_columns.remove('item_id')
