@@ -11,8 +11,8 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
 from src.util.negativesampler import NegativeSampler
-from src.data_util.customdataloader import CustomDataLoader
-from src.data_util.SVDdataloader import SVDDataloader
+from src.data_util.dataloader_custom import CustomDataLoader
+from src.data_util.dataloader_SVD import SVDDataloader
 from src.data_util.datawrapper import DataWrapper
 
 from src.model.original.fm import FM

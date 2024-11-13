@@ -181,6 +181,7 @@ class Tester:
             print("real product code: ",cur_user_test[:])
             real_rec = real_rec.tolist()
 
+
             precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
             recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
             hit_rates.append(self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
@@ -206,30 +207,30 @@ class Tester:
         return metrics
 
     # metric 함수
-    def get_precision(self,pred,real):
+    def get_precision(self, pred, real):
         precision=len(set(pred).intersection(set(real)))/len(pred)
         return precision
     
-    def get_recall(self,pred,real):
+    def get_recall(self, pred, real):
         recall=len(set(pred).intersection(set(real)))/len(real)
         
         return recall
     
-    def get_hit_rate(self,pred,real):
+    def get_hit_rate(self, pred, real):
         if len(set(pred).intersection(set(real)))>0:
             return 1
         else:
             return 0
     
-    def get_reciprocal_rank(self,pred,real):
+    def get_reciprocal_rank(self, pred, real):
         for i in range(len(pred)):
             if pred[i] in real:
                 return 1/(i+1)
         return 0
     
-    def get_dcg(self,pred,real):
-        dcg=0
+    def get_dcg(self, pred, real):
+        dcg = 0
         for i in range(len(pred)):
             if pred[i] in real:
-                dcg+=1/np.log2(i+2)
+                dcg +=1/np.log2(i+2)
         return dcg
