@@ -84,10 +84,10 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    data.label_encode()
-    items, conts = data.get_catcont_train()
-    target, c = data.get_target_c()
-    field_dims = data.get_field_dims()
+    data.label_encode(data.cat_columns)
+    items, conts = data.cat_train_df_temp, data.cont_train_df_temp
+    target, c = data.target, data.c
+    field_dims = data.field_dims
     uidf = data.uidf.values
 
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
