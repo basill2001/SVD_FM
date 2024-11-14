@@ -20,16 +20,17 @@ Settings : `embedding type = original`, `model_type = deepfm`, `num_epochs = 100
 |time     |109.45841121673584   |
 ## 3.
 Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=ml100k`  
-|metrics  |                value|value<sup>[1](#footnote_1)</sup>
-|---|---|---|
-|precision|0.2183486238532110   |0.1889908256880734 |
-|recall   |0.0291074901242037   |0.0256586943649130 |
-|hit rate |0.5688073394495413   |0.5619266055045872 |
-|rec rank |0.4031727828746177   |0.3949923547400611 |
-|dcg      |0.7048165887971195   |0.6305811680068265 |
-|time     |108.48559141159058   |146.82375121116638 |
+|metrics  | value|value<sup>[1](#footnote_1)</sup>|value<sup>[2](#footnote_2)</sup>|
+|---|---|---|---|
+|precision|0.2183486238532110   |0.1889908256880734 |0.198165137614678 |
+|recall   |0.0291074901242037   |0.0256586943649130 |0.026636492888923 |
+|hit rate |0.5688073394495413   |0.5619266055045872 |0.550458715596330 |
+|rec rank |0.4031727828746177   |0.3949923547400611 |0.371292048929663 |
+|dcg      |0.7048165887971195   |0.6305811680068265 |0.631741929379093 |
+|time     |108.48559141159058   |146.82375121116638 |104.9781436920166 | 
 ---
-<a name='footnote_1'>1</a> : preprocessor 일부 수정
+<a name='footnote_1'>1</a> : preprocessor 일부 수정  
+<a name='footnote_2'>2</a> : seed 설정
 ## 4.
 Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`  
 |metrics| value| value<sup>[1](#footnote_1)</sup>|
