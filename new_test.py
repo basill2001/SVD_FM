@@ -59,7 +59,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 args = parser.parse_args("")
 
 # seed 값 고정
-def setseed(seed=42):
+def setseed(seed: int):
     import torch
     import random
     import numpy as np
@@ -84,7 +84,7 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    data.label_encode(data.cat_columns, data.cont_columns)
+    # data.label_encode(data.cat_columns, data.cont_columns)
     items, conts = data.cat_train_df, data.cont_train_df
     target, c = data.target, data.c
     field_dims = data.field_dims
@@ -126,7 +126,7 @@ def trainer(args, data: Preprocessor):
 
 if __name__=='__main__':
     args = parser.parse_args("")
-    setseed()
+    setseed(seed=42)
     results = {}
     data_info = getdata(args)
 

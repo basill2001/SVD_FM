@@ -43,3 +43,14 @@ Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `d
 |time     |118.83392763137817   | 119.92192196846008    |
 ---
 <a name='footnote_1'>1</a> : ui_matrix 순서 바꿈
+
+## 5.
+Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=frappe`  
+|metrics  | value|
+|---|---|
+|precision| |
+|recall   | |
+|hit rate | |
+|rec rank | |
+|dcg      | |
+|time     | |
