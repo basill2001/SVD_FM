@@ -101,27 +101,24 @@ class Tester:
             print("real product code: ", cur_user_test[:])
             real_rec = real_rec.tolist()
 
-            precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            hit_rates.append(self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
+            pred = real_rec[:self.args.topk]
+            real = cur_user_test
+
+            precisions.append(self.get_precision(pred, real))
+            recalls.append(self.get_recall(pred, real))
+            hit_rates.append(self.get_hit_rate(pred, real))
+            reciprocal_ranks.append(self.get_reciprocal_rank(pred, real))
+            dcgs.append(self.get_dcg(pred, real))
   
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
         print("average precision: ",np.mean(precisions))
         # totla user number and total item number
         print("total user number: ",len(user_list))
         print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics = {}
-        metrics['precision'] = np.mean(precisions)
-        metrics['recall'] = np.mean(recalls)
-        metrics['hit_rate'] = np.mean(hit_rates)
-        metrics['reciprocal_rank'] = np.mean(reciprocal_ranks)
-        metrics['dcg'] = np.mean(dcgs)
+        metrics = {'precision' : np.mean(precisions), 
+                   'recall' : np.mean(recalls),
+                   'hit_rate' : np.mean(hit_rates),
+                   'reciprocal_rank' : np.mean(reciprocal_ranks),
+                   'dcg' : np.mean(dcgs)}
 
         return metrics
 
@@ -182,27 +179,24 @@ class Tester:
             real_rec = real_rec.tolist()
 
 
-            precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            recalls.append(self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            hit_rates.append(self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-  
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
+            pred = real_rec[:self.args.topk]
+            real = cur_user_test
+
+            precisions.append(self.get_precision(pred, real))
+            recalls.append(self.get_recall(pred, real))
+            hit_rates.append(self.get_hit_rate(pred, real))
+            reciprocal_ranks.append(self.get_reciprocal_rank(pred, real))
+            dcgs.append(self.get_dcg(pred, real))
+
         print("average precision: ",np.mean(precisions))
         # totla user number and total item number
         print("total user number: ",len(user_list))
         print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics={}
-        metrics['precision']=np.mean(precisions)
-        metrics['recall']=np.mean(recalls)
-        metrics['hit_rate']=np.mean(hit_rates)
-        metrics['reciprocal_rank']=np.mean(reciprocal_ranks)
-        metrics['dcg']=np.mean(dcgs)
+        metrics = {'precision' : np.mean(precisions), 
+                   'recall' : np.mean(recalls),
+                   'hit_rate' : np.mean(hit_rates),
+                   'reciprocal_rank' : np.mean(reciprocal_ranks),
+                   'dcg' : np.mean(dcgs)}
 
         return metrics
 
