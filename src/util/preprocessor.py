@@ -72,14 +72,9 @@ class Preprocessor:
         return user_emb_included_df, user_embedding_df, item_embedding_df
 
     
-    def label_encode(self, cat_columns):
-        self.cont_train_df = self.train_df.drop(self.cat_columns, axis=1)
-        # deep copy
-        train_df = self.train_df.copy(deep=True)
-
-        cont_columns = deepcopy(self.cont_columns)
-        cat_columns = deepcopy(self.cat_columns)
-        
+    def label_encode(self, cat_columns, cont_columns):
+        # # deep copy
+        # train_df = self.train_df.copy(deep=True)
         # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
         self.le_dict = {}
         # when we use SVD, we don't need to embedd user_id and item_id
@@ -87,38 +82,35 @@ class Preprocessor:
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
-                    le.fit(train_df[col])
+                    le.fit(self.train_df[col])
                 else:
-                    train_df[col] = le.fit_transform(train_df[col])
+                    self.train_df[col] = le.fit_transform(self.train_df[col])
                 self.le_dict[col] = le
-    
-            cat_train_df = train_df[cat_columns].drop(['user_id','item_id'], axis=1).to_numpy()[:].astype('int')
-            cont_columns = cont_columns + self.user_embedding_df.columns.tolist() + self.item_embedding_df.columns.tolist()
-            
-            # user_id, item_id 삭제
-            cont_columns.remove('user_id')
-            cont_columns.remove('item_id')
-
-            cont_train_df = self.cont_train_df[cont_columns]
-            self.args.cont_dims = len(cont_columns)
-            cat_columns.remove('user_id')
-            cat_columns.remove('item_id')
-            
         # when we use original embedding, we need to encode user_id and item_id
         else:
             for col in cat_columns:
                 le = LabelEncoder()
-                train_df[col] = le.fit_transform(train_df[col])
+                self.train_df[col] = le.fit_transform(self.train_df[col])
                 self.le_dict[col] = le
-            cat_train_df = train_df[cat_columns].to_numpy()[:].astype('int')
+        
+        self.cont_train_df = self.train_df.drop(self.cat_columns, axis=1)
+        if self.args.embedding_type=='SVD':
+            cat_train_df = self.train_df[cat_columns].drop(['user_id','item_id'], axis=1).to_numpy()[:].astype('int')
+            cat_columns.remove('user_id')
+            cat_columns.remove('item_id')
+            cont_columns = cont_columns + self.user_embedding_df.columns.tolist()[1:] + self.item_embedding_df.columns.tolist()[1:]
+            cont_train_df = self.cont_train_df[cont_columns]
+            self.args.cont_dims = len(cont_columns)
+        else:
+            cat_train_df = self.train_df[cat_columns].to_numpy()[:].astype('int')
             cont_train_df = self.cont_train_df[cont_columns]
             self.args.cont_dims = len(cont_columns)
 
-        self.cat_columns_temp = cat_columns
-        self.cont_columns_temp = cont_columns
-        self.uidf = train_df[['user_id', 'item_id']]
-        self.cat_train_df_temp = cat_train_df
-        self.cont_train_df_temp = cont_train_df.to_numpy()[:].astype('float32')
+        self.cat_columns = cat_columns
+        self.cont_columns = cont_columns
+        self.uidf = self.train_df[['user_id', 'item_id']]
+        self.cat_train_df = cat_train_df
+        self.cont_train_df = cont_train_df.to_numpy()[:].astype('float32')
         
-        self.field_dims = np.max(self.cat_train_df_temp, axis=0) + 1
-        self.train_df_temp = train_df.copy(deep=True)
+        self.field_dims = np.max(self.cat_train_df, axis=0) + 1
+        # self.train_df_temp = train_df.copy(deep=True)

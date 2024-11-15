@@ -13,11 +13,11 @@ class Tester:
         self.args = args
         self.model = model
 
-        self.train_df, self.test_org = data.train_df_temp, data.test_df
+        self.train_df, self.test_org = data.train_df, data.test_df
         self.user_df, self.item_df = data.user_info, data.item_info
         self.le_dict = data.le_dict
         self.user_embedding, self.item_embedding = data.user_embedding_df, data.item_embedding_df
-        self.cat_cols, self.cont_cols = data.cat_columns_temp, data.cont_columns_temp    
+        self.cat_cols, self.cont_cols = data.cat_columns, data.cont_columns
         self.train_org = data.get_original_train()
 
     # to make dataframe with given user_id

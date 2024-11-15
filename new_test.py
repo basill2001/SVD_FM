@@ -84,8 +84,8 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    data.label_encode(data.cat_columns)
-    items, conts = data.cat_train_df_temp, data.cont_train_df_temp
+    data.label_encode(data.cat_columns, data.cont_columns)
+    items, conts = data.cat_train_df, data.cont_train_df
     target, c = data.target, data.c
     field_dims = data.field_dims
     uidf = data.uidf.values
