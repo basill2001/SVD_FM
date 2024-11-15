@@ -2,7 +2,6 @@ import argparse
 import time
 # from copy import deepcopy
 
-
 # from sklearn.preprocessing import LabelEncoder
 # from torch.utils.data import Dataset
 import pytorch_lightning as pl
@@ -41,8 +40,8 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or original')
-parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='SVD',       help='SVD or original')
+parser.add_argument('--model_type', type=str, default='deepfm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
@@ -114,8 +113,6 @@ def trainer(args, data: Preprocessor):
     else:
         raise NotImplementedError
     
-    
-    # dataloaders
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
     
     start = time.time()
@@ -125,8 +122,8 @@ def trainer(args, data: Preprocessor):
     return model, end-start
 
 if __name__=='__main__':
-    args = parser.parse_args("")
     setseed(seed=42)
+    args = parser.parse_args("")
     results = {}
     data_info = getdata(args)
 

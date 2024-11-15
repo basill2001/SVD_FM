@@ -38,7 +38,6 @@ class FeatureEmbedding(nn.Module):
         x = self.embedding(x)
         return x
 
-
 class FM_Linear(nn.Module):
 
     def __init__(self, args, field_dims):

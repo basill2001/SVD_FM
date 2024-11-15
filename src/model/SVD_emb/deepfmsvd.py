@@ -13,7 +13,7 @@ from src.model.SVD_emb.layers import FeatureEmbedding, FeatureEmbedding, FM_Line
 class DeepFMSVD(pl.LightningModule):
     def __init__(self, args,field_dims):
         super(DeepFMSVD, self).__init__()
-        self.linear = FM_Linear(args,field_dims)
+        self.linear = FM_Linear(args, field_dims)
         self.fm = FMSVD(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
 
