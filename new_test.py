@@ -1,5 +1,6 @@
 import argparse
 import time
+import optuna
 # from copy import deepcopy
 
 
@@ -41,8 +42,8 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or original')
-parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='NMF',            help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='deepfm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
@@ -99,13 +100,13 @@ def trainer(args, data: Preprocessor):
         model = DeepFM(args, field_dims)
         Dataset = CustomDataLoader(items, conts, target, c)
 
-    elif args.model_type=='fm' and args.embedding_type=='SVD':
+    elif args.model_type=='fm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
         Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
 
-    elif args.model_type=='deepfm' and args.embedding_type=='SVD':
+    elif args.model_type=='deepfm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = DeepFMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
@@ -126,7 +127,7 @@ def trainer(args, data: Preprocessor):
 
 if __name__=='__main__':
     args = parser.parse_args("")
-    setseed()
+    # setseed()
     results = {}
     data_info = getdata(args)
 
@@ -136,7 +137,7 @@ if __name__=='__main__':
     test_time = time.time()
     tester = Tester(args, model, data_info)
 
-    if args.embedding_type=='SVD':
+    if args.embedding_type=='SVD' or args.embedding_type=='NMF':
         result = tester.svdtest()
     else:
         result = tester.test()

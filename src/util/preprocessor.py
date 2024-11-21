@@ -49,8 +49,12 @@ class Preprocessor:
         ns_sampled_df = ns_sampled_df.merge(item_info, on='item_id', how='left')
         ns_sampled_df = ns_sampled_df.merge(user_info, on='user_id', how='left')
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
-        # user_embedding, item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
-        user_embedding, item_embedding = NMFs(self.args).fit_nmf(self.ui_matrix)
+        
+        
+        if self.args.embedding_type=='SVD':
+            user_embedding, item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
+        elif self.args.embedding_type=='NMF':
+            user_embedding, item_embedding = NMFs(self.args).fit_nmf(self.ui_matrix)
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(user_embedding, item_embedding, ns_sampled_df)
 
     
@@ -85,7 +89,7 @@ class Preprocessor:
         # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
         self.le_dict = {}
         # when we use SVD, we don't need to embedd user_id and item_id
-        if self.args.embedding_type=='SVD':
+        if self.args.embedding_type=='SVD' or self.args.embedding_type=='NMF':
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':

@@ -57,3 +57,14 @@ Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `d
 |time     |118.83392763137817   | 119.92192196846008    |
 ---
 <a name='footnote_1'>1</a> : ui_matrix 순서 바꿈
+
+## 4-1.
+Settings : `embedding type = NMF`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`
+|metrics |value |
+|---|---|
+|precision |0.522477064220183 |
+|recall    |0.095890446513980 |
+|hit rate  |0.899082568807339 |
+|rec rank  |0.715022935779816 |
+|dcg       |1.589640648742865 |
+|time      |105.3881254196167 |
