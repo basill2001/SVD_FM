@@ -127,7 +127,7 @@ def trainer(args, data: Preprocessor):
 
 if __name__=='__main__':
     args = parser.parse_args("")
-    # setseed()
+    setseed()
     results = {}
     data_info = getdata(args)
 
