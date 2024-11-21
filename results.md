@@ -8,6 +8,7 @@ Settings : `embedding type = original`, `model_type = fm`, `num_epochs = 100`, `
 |rec rank |0.5081039755351682       |
 |dcg      |0.914304604489501        |
 |time     |94.00355195999146        |
+
 ## 2. 
 Settings : `embedding type = original`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`  
 |metrics| value|
@@ -18,6 +19,7 @@ Settings : `embedding type = original`, `model_type = deepfm`, `num_epochs = 100
 |rec rank |0.6675076452599388   |
 |dcg      |1.3560263674407254   |
 |time     |109.45841121673584   |
+
 ## 3.
 Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=ml100k`  
 |metrics  | value|value<sup>[1](#footnote_1)</sup>|value<sup>[2](#footnote_2)</sup>|
@@ -31,6 +33,18 @@ Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=
 ---
 <a name='footnote_1'>1</a> : preprocessor 일부 수정  
 <a name='footnote_2'>2</a> : seed 설정
+
+## 3-1.
+Settings : `embedding type = NMF`, `model_type = fm`, `num_epochs = 100`, `data=ml100k`
+|metrics |value |
+|---|---|
+|precision |0.2628440366972477 |
+|recall    |0.0348235349105177 |
+|hit rate  |0.6261467889908257 |
+|rec rank  |0.4530581039755351 |
+|dcg       |0.8297901104417563 |
+|time      |95.44319891929626  |
+
 ## 4.
 Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`  
 |metrics| value| value<sup>[1](#footnote_1)</sup>|
