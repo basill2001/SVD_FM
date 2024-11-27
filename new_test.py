@@ -1,6 +1,5 @@
 import argparse
 import time
-import optuna
 # from copy import deepcopy
 
 
@@ -42,8 +41,10 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
-parser.add_argument('--embedding_type', type=str, default='NMF',            help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='deepfm',                 help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or NMF or original')
+# added
+parser.add_argument('--sparse', type=bool, default=True,           help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
@@ -125,6 +126,8 @@ def trainer(args, data: Preprocessor):
     end = time.time()
     return model, end-start
 
+def objective(trial):
+    model_type = trial.suggest_categorical('model_type')
 if __name__=='__main__':
     args = parser.parse_args("")
     setseed()
