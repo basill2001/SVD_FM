@@ -43,7 +43,7 @@ parser.add_argument('--emb_dim', type=int, default=16,             help='embeddi
 # parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
 parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or NMF or original')
 # added
-parser.add_argument('--sparse', type=bool, default=True,           help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--sparse', type=str, default='sparse',       help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
@@ -146,6 +146,6 @@ if __name__=='__main__':
         result = tester.test()
 
     end_test_time = time.time()
-    results[args.model_type + args.embedding_type] = result
+    results[args.model_type + args.sparse + args.embedding_type] = result
     print(results)
     print("time :", timeee)

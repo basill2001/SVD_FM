@@ -56,10 +56,10 @@ class Preprocessor:
         elif self.args.embedding_type=='NMF':
             user_embedding, item_embedding = NMFs(self.args).fit_nmf(self.ui_matrix)
         
-        # if self.args.sparse==True:
-            # threshold = 0.01
-            # user_embedding[(-1*threshold<user_embedding) & (user_embedding<threshold)] = 0
-            # item_embedding[(-1*threshold<item_embedding) * (item_embedding<threshold)] = 0
+        if self.args.sparse=='sparse':
+            threshold = 0.01
+            user_embedding[(-1*threshold<user_embedding) & (user_embedding<threshold)] = 0
+            item_embedding[(-1*threshold<item_embedding) * (item_embedding<threshold)] = 0
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(user_embedding, item_embedding, ns_sampled_df)
 
     
