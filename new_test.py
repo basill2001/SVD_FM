@@ -1,6 +1,7 @@
 import argparse
 import time
-# from copy import deepcopy
+import optuna
+from optuna.integration import PyTorchLightningPruningCallback
 
 
 # from sklearn.preprocessing import LabelEncoder
@@ -26,13 +27,10 @@ from src.util.preprocessor import Preprocessor
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
-# parser.add_argument('--num_factors', type=int, default=15, help='Number of factors for FM')
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
-# parser.add_argument('--num_epochs_ae', type=int, default=300,    help='Number of epochs')
-parser.add_argument('--num_epochs_training', type=int, default=100,         help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=1,         help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
-# parser.add_argument('--ae_batch_size', type=int, default=256, help='Batch size for autoencoder')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2,      help='Number of deep layers')
 parser.add_argument('--deep_layer_size', type=int, default=128,    help='Size of deep layers')
@@ -40,17 +38,14 @@ parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
-# parser.add_argument('--num_embedding', type=int, default=200, help='Number of embedding for autoencoder') 
 parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or NMF or original')
-# added
-parser.add_argument('--sparse', type=str, default='sparse',       help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--sparse', type=str, default='',       help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
-# parser.add_argument('--auto_lr', type=float, default=0.01, help='autoencoder learning rate')
-# parser.add_argument('--k', type=int, default=10, help='autoencoder k')
+
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
@@ -126,12 +121,13 @@ def trainer(args, data: Preprocessor):
     end = time.time()
     return model, end-start
 
-def objective(trial):
-    model_type = trial.suggest_categorical('model_type')
+# def objective(trial: optuna.trial.Trial) :
+#     model_type = trial.suggest_categorical('model_type', ['FM', 'deepFM'])
+#     embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD', 'NMF'])
+    
+
 if __name__=='__main__':
     args = parser.parse_args("")
-    setseed()
-    results = {}
     data_info = getdata(args)
 
     print('model type is', args.model_type)
@@ -146,6 +142,7 @@ if __name__=='__main__':
         result = tester.test()
 
     end_test_time = time.time()
-    results[args.model_type + args.sparse + args.embedding_type] = result
+    model_description = args.model_type + args.sparse + args.embedding_type
+    results = {model_description : result}
     print(results)
     print("time :", timeee)

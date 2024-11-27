@@ -76,7 +76,7 @@ class Tester:
             if user_id not in self.test_org['user_id'].unique():
                 continue
 
-            print("customer id: ",user_id, end=" ")
+            # print("customer id: ",user_id, end=" ")
             ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
             # reorder movie_list
@@ -89,7 +89,7 @@ class Tester:
             # erase the things in ml that are in cur_userslist without changing the order
             real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
             
-            print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
+            # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
 
             cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==user_id])
             cur_user_test = cur_user_test[:, 1]
@@ -98,7 +98,7 @@ class Tester:
 
             if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
                 continue
-            print("real product code: ", cur_user_test[:])
+            # print("real product code: ", cur_user_test[:])
             real_rec = real_rec.tolist()
 
             precisions.append(self.get_precision(real_rec[:self.args.topk],cur_user_test))
@@ -107,15 +107,15 @@ class Tester:
             reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
             dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
   
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-        print("average precision: ",np.mean(precisions))
+            # print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
+            # print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
+            # print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
+            # print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
+            # print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
+        # print("average precision: ",np.mean(precisions))
         # totla user number and total item number
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
+        # print("total user number: ",len(user_list))
+        # print("total item number: ",len(self.train_df['item_id'].unique()))
         metrics = {}
         metrics['precision'] = np.mean(precisions)
         metrics['recall'] = np.mean(recalls)
@@ -157,7 +157,7 @@ class Tester:
             if customerid not in self.test_org['user_id'].unique():
                 continue
 
-            print("customer id: ",customerid, end=" ")
+            # print("customer id: ",customerid, end=" ")
             ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
             ml = np.array(ml)
             ml = ml[topidx] # reorder movie_list
@@ -169,7 +169,7 @@ class Tester:
             # erase the things in ml that are in cur_userslist without changing the order
             real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
             
-            print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
+            # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
 
             cur_user_test=np.array(self.test_org[(self.test_org['user_id'])==customerid])
             cur_user_test=cur_user_test[:,1]
@@ -178,7 +178,7 @@ class Tester:
 
             if(len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
                 continue
-            print("real product code: ",cur_user_test[:])
+            # print("real product code: ",cur_user_test[:])
             real_rec = real_rec.tolist()
 
 
@@ -188,15 +188,15 @@ class Tester:
             reciprocal_ranks.append(self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
             dcgs.append(self.get_dcg(real_rec[:self.args.topk],cur_user_test))
   
-            print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
-            print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
-            print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
-            print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
-            print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
-        print("average precision: ",np.mean(precisions))
+            # print("precision: ",self.get_precision(real_rec[:self.args.topk],cur_user_test))
+            # print("recall: ",self.get_recall(real_rec[:self.args.topk],cur_user_test))
+            # print("hit rate: ",self.get_hit_rate(real_rec[:self.args.topk],cur_user_test))
+            # print("reciprocal rank: ",self.get_reciprocal_rank(real_rec[:self.args.topk],cur_user_test))
+            # print("dcg: ",self.get_dcg(real_rec[:self.args.topk],cur_user_test))
+        # print("average precision: ",np.mean(precisions))
         # totla user number and total item number
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
+        # print("total user number: ",len(user_list))
+        # print("total item number: ",len(self.train_df['item_id'].unique()))
         metrics={}
         metrics['precision']=np.mean(precisions)
         metrics['recall']=np.mean(recalls)
