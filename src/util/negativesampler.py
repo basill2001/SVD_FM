@@ -10,7 +10,7 @@ class NegativeSampler:
     def __init__(self, args, original_df, item_info, user_info) -> None:
         self.args = args
         self.original_df = original_df
-        self.seed = np.random.seed(args.seed)
+        # self.seed = np.random.seed(args.seed)
         self.original_df.drop(columns=['timestamp','rating'], axis=1, inplace=True)
         self.original_df['target'] = 1
         self.original_df['c'] = 1

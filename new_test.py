@@ -1,8 +1,8 @@
 import argparse
 import time
 import optuna
-from optuna.integration import PyTorchLightningPruningCallback
-
+import pickle
+from random import randint
 
 # from sklearn.preprocessing import LabelEncoder
 # from torch.utils.data import Dataset
@@ -39,7 +39,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 parser.add_argument('--embedding_type', type=str, default='SVD',            help='SVD or NMF or original')
-parser.add_argument('--sparse', type=str, default='',       help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--sparse_threshold', type=int, default=0,     help='if absolute value is less than this threshold, the embedding values are counted as 0')
 parser.add_argument('--model_type', type=str, default='fm',                 help='fm or deepfm')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
@@ -64,6 +64,17 @@ def setseed(seed=42):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
+
+def result_checker(result_dict: dict, result: dict, model_desc: str):
+    try:
+        for key in result.keys():
+            result_dict[model_desc][key].append(result[key])
+    except KeyError:
+        result_dict[model_desc] = {}
+        for key in result.keys():
+            result_dict[model_desc][key] = [result[key]]
+    return result_dict
+
 
 def getdata(args):
     
@@ -111,8 +122,6 @@ def trainer(args, data: Preprocessor):
     else:
         raise NotImplementedError
     
-    
-    # dataloaders
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
     
     start = time.time()
@@ -121,28 +130,46 @@ def trainer(args, data: Preprocessor):
     end = time.time()
     return model, end-start
 
-# def objective(trial: optuna.trial.Trial) :
-#     model_type = trial.suggest_categorical('model_type', ['FM', 'deepFM'])
-#     embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD', 'NMF'])
-    
-
-if __name__=='__main__':
+def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
+    args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
+    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD', 'NMF'])
+    sparse = randint(0, 1)
+    if sparse==0:
+        args.sparse_threshold = 0
+    else:
+        args.sparse_threshold = trial.suggest_float('sparse_threshold', 0.000000001, 0.1)
     data_info = getdata(args)
 
     print('model type is', args.model_type)
     print('embedding type is', args.embedding_type)
     model, timeee = trainer(args, data_info)
-    test_time = time.time()
     tester = Tester(args, model, data_info)
 
     if args.embedding_type=='SVD' or args.embedding_type=='NMF':
         result = tester.svdtest()
     else:
         result = tester.test()
+    
+    if args.embedding_type=='original' or args.sparse_threshold==0:
+        model_desc = args.embedding_type + args.model_type
+    else:
+        model_desc = 'sparse' + args.embedding_type + args.model_type
+        result['threshold'] = args.sparse_threshold
+    global result_dict
+    result_dict = result_checker(result_dict, result, model_desc)
 
-    end_test_time = time.time()
-    model_description = args.model_type + args.sparse + args.embedding_type
-    results = {model_description : result}
-    print(results)
-    print("time :", timeee)
+    return result['precision']
+
+result_dict = {}
+study = optuna.create_study(direction='maximize')
+study.optimize(objective, n_trials=10)
+
+print("Scores of Best Trial :", study.best_trial.value)
+print("Params of Best Trial :", study.best_trial.params)
+
+with open('./notes/total_results2.pickle', mode='wb') as f:
+    pickle.dump(result_dict, f)
+
+with open('./notes/study.pickle', mode='wb') as f:
+    pickle.dump(study, f)
