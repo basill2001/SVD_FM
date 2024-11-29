@@ -29,7 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
-parser.add_argument('--num_epochs_training', type=int, default=1,         help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=100,         help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2,      help='Number of deep layers')
@@ -163,7 +163,7 @@ def objective(trial: optuna.trial.Trial) :
 
 result_dict = {}
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=10)
+study.optimize(objective, n_trials=100)
 
 print("Scores of Best Trial :", study.best_trial.value)
 print("Params of Best Trial :", study.best_trial.params)
