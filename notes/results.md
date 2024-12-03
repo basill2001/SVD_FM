@@ -9,7 +9,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |dcg      |0.914304604489501 |
 |time     |94.00355195999146 |
 
-## 2. original, deepFM
+## 2. original, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
 |metrics |value |
 |---|---|
@@ -33,32 +33,6 @@ Settings :`num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : preprocessor 일부 수정  
 <a name='footnote_2'>2</a> : seed 설정
-<<<<<<< HEAD
-## 4.
-Settings : `embedding type = SVD`, `model_type = deepfm`, `num_epochs = 100`, `data=ml100k`  
-|metrics| value| value<sup>[1](#footnote_1)</sup>|value<sup>[2](#footnote_2)</sup>|
-|---    |---   |---|---|
-|precision|0.2724770642201835 |0.5114678899082569 |0.5279816513761467 |
-|recall   |0.0352602390920223 |0.0917484469764606 |0.0967468529122231 |
-|hit rate |0.6100917431192661 |0.9174311926605505 |0.9197247706422018 |
-|rec rank |0.4261085626911315 |0.7372324159021407 |0.7345565749235473 |
-|dcg      |0.8427053911790566 |1.5751689006246197 |1.6030452903462624 |
-|time     |118.83392763137817 |119.92192196846008 |120.98636102676392 |
----
-<a name='footnote_1'>1</a> : ui_matrix 순서 바꿈
-<a name='footnote_2'>2</a> : seed 설정 
-
-## 5.
-Settings : `embedding type = SVD`, `model_type = fm`, `num_epochs = 100`, `data=frappe`  
-|metrics  | value|
-|---|---|
-|precision| |
-|recall   | |
-|hit rate | |
-|rec rank | |
-|dcg      | |
-|time     | |
-=======
 
 ## 3-1. NMF, FM
 Settings : `num_epochs = 100`, `data=ml100k`
@@ -71,7 +45,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |dcg       |0.8297901104417563 |
 |time      |95.44319891929626  |
 
-## 4. SVD, deepFM
+## 4. SVD, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |value<sup>[3](#footnote_3)</sup> |
 |---|---|---|---|---|
@@ -86,7 +60,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 <a name='footnote_2'>2</a> : sparse SVD 시행(-0.1~0.1 값들을 전부 0으로)  
 <a name='footnote_3'>3</a> : sparse SVD 시행(-0.01~0.01 값들을 전부 0으로)
  
-## 4-1. NMF, deepFM
+## 4-1. NMF, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |
 |---|---|---|---|
@@ -99,4 +73,3 @@ Settings : `num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : sparse NMF 시행(0.1 이하인 embedding 값을 전부 0으로)  
 <a name='footnote_2'>2</a> : sparse NMF 시행(0~0.01 값들을 전부 0으로)  
->>>>>>> trial_NMF
