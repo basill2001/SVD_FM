@@ -1,7 +1,7 @@
 from scipy.sparse.linalg import svds
 from sklearn.decomposition import TruncatedSVD
 
-class SVD:
+class embed_SVD:
 
     def __init__(self, args) -> None:
         self.args = args

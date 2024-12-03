@@ -5,8 +5,8 @@ from copy import deepcopy
 from typing import Tuple
 
 from src.util.negativesampler import NegativeSampler
-from src.util.SVD import SVD
-from src.util.NMFs import NMFs
+from src.util.embed_SVD import embed_SVD
+from src.util.embed_NMF import embed_NMF
 
 
 class Preprocessor:
@@ -53,9 +53,9 @@ class Preprocessor:
         
         
         if self.args.embedding_type=='SVD' or self.args.embedding_type=='original':
-            user_embedding, item_embedding = SVD(self.args).fit_truncatedSVD(self.ui_matrix)
+            user_embedding, item_embedding = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
         elif self.args.embedding_type=='NMF':
-            user_embedding, item_embedding = NMFs(self.args).fit_nmf(self.ui_matrix)
+            user_embedding, item_embedding = embed_NMF(self.args).fit_nmf(self.ui_matrix)
         
         if self.args.sparse=='sparse':
             threshold = 0.01

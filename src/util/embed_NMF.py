@@ -1,6 +1,6 @@
 from sklearn.decomposition import NMF
 
-class NMFs:
+class embed_NMF:
 
     def __init__(self, args):
         self.args = args
