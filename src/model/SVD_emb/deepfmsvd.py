@@ -13,6 +13,7 @@ from src.model.SVD_emb.layers import FeatureEmbedding, FeatureEmbedding, FM_Line
 class DeepFMSVD(pl.LightningModule):
     def __init__(self, args,field_dims):
         super(DeepFMSVD, self).__init__()
+        self.args = args
         self.linear = FM_Linear(args, field_dims)
         self.fm = FMSVD(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
@@ -21,7 +22,6 @@ class DeepFMSVD(pl.LightningModule):
         self.mlp = MLP(args, self.embed_output_dim)
         self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
         self.lr = args.lr
-        self.args = args
         self.field_dims = field_dims
         self.sig = nn.Sigmoid()
         self.lastlinear = nn.Linear(3,1)
