@@ -57,7 +57,7 @@ class Preprocessor:
         
         threshold = self.args.sparse_threshold
         user_embedding[(-1*threshold<user_embedding) & (user_embedding<threshold)] = 0
-        item_embedding[(-1*threshold<item_embedding) * (item_embedding<threshold)] = 0
+        item_embedding[(-1*threshold<item_embedding) & (item_embedding<threshold)] = 0
         self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(user_embedding, item_embedding, ns_sampled_df)
 
     

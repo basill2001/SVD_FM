@@ -132,9 +132,9 @@ def trainer(args, data: Preprocessor):
 
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
-    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD', 'NMF'])
-    sparse = randint(0, 1)
+    args.model_type = trial.suggest_categorical('model_type', ['fm'])
+    args.embedding_type = trial.suggest_categorical('embedding_type', ['NMF'])
+    sparse = 1
     if sparse==0:
         args.sparse_threshold = 0
     else:
@@ -163,13 +163,13 @@ def objective(trial: optuna.trial.Trial) :
 
 result_dict = {}
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=5)
 
 print("Scores of Best Trial :", study.best_trial.value)
 print("Params of Best Trial :", study.best_trial.params)
 
-with open('./notes/total_results2.pickle', mode='wb') as f:
+with open('./notes/total_result_add.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
 
-with open('./notes/study.pickle', mode='wb') as f:
-    pickle.dump(study, f)
+# with open('./notes/study.pickle', mode='wb') as f:
+#     pickle.dump(study, f)
