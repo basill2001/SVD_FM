@@ -3,23 +3,19 @@ import torch
 import torch.nn as nn
 from src.model.SVD_emb.layers import MLP, FeatureEmbedding, FM_Linear, FM_Interaction
 
-# lightning
 import pytorch_lightning as pl
 
-class FMSVD(pl.LightningModule):
+class FM(pl.LightningModule):
     def __init__(self, args, field_dims):
-        super(FMSVD, self).__init__()
-
-        self.lr = args.lr
+        super(FM, self).__init__()
+        self.embedding = FeatureEmbedding(args, field_dims)
+        self.linear = FM_Linear(args, field_dims)
+        self.interaction = FM_Interaction(args)
+        self.bceloss = nn.BCEWithLogitsLoss()
         self.args = args
         self.sig = nn.Sigmoid()
         self.last_linear = nn.Linear(2,1)
-        
-        if args.model_type=='fm':
-            self.embedding = FeatureEmbedding(args, field_dims)
-        self.linear = FM_Linear(args, field_dims)
-        self.interaction = FM_Interaction(args)
-        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
+
 
 
     def l2norm(self):
@@ -32,7 +28,7 @@ class FMSVD(pl.LightningModule):
             reg += torch.norm(param)**2
         return reg * self.args.weight_decay
 
-    def loss(self, y_pred, y_true,c_values):
+    def loss(self, y_pred, y_true, c_values):
         # calculate weighted mse with l2 regularization
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
@@ -47,7 +43,7 @@ class FMSVD(pl.LightningModule):
         # so that the weights can be comparable
         lin_term_sig = self.sig(lin_term)
         inter_term_sig = self.sig(inter_term)
-        outs = torch.cat((lin_term_sig,inter_term_sig),1)
+        outs = torch.cat((lin_term_sig, inter_term_sig), 1)
         x = self.last_linear(outs)
         x = x.squeeze(1)
         return x, cont_emb, lin_term, inter_term
