@@ -9,11 +9,11 @@ class MLP(nn.Module):
         self.args = args
         self.deep_layers = nn.ModuleList()
         for i in range(args.num_deep_layers):
-            self.deep_layers.append(nn.Linear(input_size, args.deep_layer_size))
+            self.deep_layers.append(nn.Linear(in_features=input_size, out_features=args.deep_layer_size))
             self.deep_layers.append(nn.ReLU())
             self.deep_layers.append(nn.Dropout(p=0.2))
             input_size = args.deep_layer_size
-        self.deep_output_layer = nn.Linear(input_size, 1)
+        self.deep_output_layer = nn.Linear(in_features=input_size, out_feautres=1)
 
     def forward(self, x):
         # input x : batch_size * (num_features* num_embedding)
@@ -27,7 +27,7 @@ class FeatureEmbedding(nn.Module):
 
     def __init__(self, args, field_dims):
         super(FeatureEmbedding, self).__init__()
-        self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
+        self.embedding = nn.Embedding(num_embeddings=sum(field_dims), embedding_dim=args.emb_dim)
         self.field_dims = field_dims
         # for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         # as the features should be embedded column-wise this operatation easily makes it possible
@@ -44,20 +44,19 @@ class FM_Linear(nn.Module):
 
     def __init__(self, args, field_dims):
         super(FM_Linear, self).__init__()
-        self.linear = torch.nn.Embedding(sum(field_dims)+1, 1)
-        self.bias = nn.Parameter(torch.randn(1))
-        self.w = nn.Parameter(torch.randn(args.cont_dims))
+        self.linear = torch.nn.Embedding(num_embeddings=sum(field_dims), embedding_dim=1)
+        self.bias = nn.Parameter(data=torch.randn(1))
+        self.w = nn.Parameter(data=torch.randn(args.cont_dims))
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
         self.args = args
     
     def forward(self, x, x_cont):
         # input x: batch_size * num_features
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)
+        x += x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1) # add continuous features
         
-        x = torch.sum(linear_term, dim=1) + self.bias
-        x = x + cont_linear 
+        x = torch.sum(linear_term, dim=1) + self.bias + cont_linear
         return x
 
 class FM_Interaction(nn.Module):
