@@ -4,7 +4,7 @@ import numpy as np
 
 class MLP(nn.Module):
 
-    def __init__(self, args, input_size):
+    def __init__(self, args, input_size): # original과 동일
         super(MLP, self).__init__()
         self.args = args
         self.deep_layers = nn.ModuleList()
@@ -14,11 +14,12 @@ class MLP(nn.Module):
             self.deep_layers.append(nn.Dropout(p=0.2))
             input_size = args.deep_layer_size
         self.deep_output_layer = nn.Linear(input_size, 1)
-
-    def forward(self, x):
+    
+    def forward(self, x): # original과 동일
+        deep_x = x
         for layer in self.deep_layers:
-            x = layer(x)
-        x = self.deep_output_layer(x)
+            deep_x = layer(deep_x)
+        x = self.deep_output_layer(deep_x)
         return x
 
 class FeatureEmbedding(nn.Module):
@@ -33,7 +34,7 @@ class FeatureEmbedding(nn.Module):
 
     def forward(self, x):
         # input x: batch_size * num_features
-        x = x + x.new_tensor(self.offsets).unsqueeze(0) # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
+        x = x + x.new_tensor(self.offsets).unsqueeze(0)  # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         x = self.embedding(x)
         return x
 
@@ -47,7 +48,7 @@ class FM_Linear(nn.Module):
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
         self.args = args
     
-    def forward(self, x, x_cont, emb_x):
+    def forward(self, x, emb_x, x_cont):
         # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
@@ -61,6 +62,7 @@ class FM_Linear(nn.Module):
 
         x = torch.sum(linear_term, dim=1) + self.bias
         x = x + cont_linear
+
         return x
 
 class FM_Interaction(nn.Module):
@@ -74,8 +76,8 @@ class FM_Interaction(nn.Module):
         x_cont = x_cont.unsqueeze(1)
         user_emb = svd_emb[:,:self.args.num_eigenvector].unsqueeze(1)
         item_emb = svd_emb[:, self.args.num_eigenvector:].unsqueeze(1)
-        
-        x_comb = torch.cat((emb_x, user_emb, item_emb), 1)
+        x_comb = torch.cat((emb_x, user_emb), 1)
+        x_comb = torch.cat((x_comb, item_emb), 1)
 
         cont = torch.matmul(x_cont, self.v)
         x_comb = torch.cat((x_comb, cont), 1)
@@ -84,5 +86,6 @@ class FM_Interaction(nn.Module):
         square_sum = torch.sum(x_comb**2, 1)
         
         interaction = 0.5*torch.sum(sum_square-square_sum, 1, keepdim=True)
+        cont_emb = self.v.unsqueeze(0).repeat(x_comb.shape[0], 1, 1)
         
         return interaction

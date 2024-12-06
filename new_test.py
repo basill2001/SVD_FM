@@ -14,7 +14,7 @@ from src.data_util.datawrapper import DataWrapper
 
 from src.model.fm import FM
 # from src.model.original.deepfm import DeepFM
-# from src.model.SVD_emb.fmsvd import FMSVD
+from src.model.SVD_emb.fmsvd import FMSVD
 # from src.model.SVD_emb.deepfmsvd import DeepFMSVD
 from src.customtest import Tester
 
@@ -48,7 +48,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='original',    help='SVD or NMF or original')
+parser.add_argument('--embedding_type', type=str, default='SVD',    help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',         help='fm or deepfm')
 
 args = parser.parse_args("")
@@ -94,7 +94,7 @@ def trainer(args, data: Preprocessor):
         Dataset = CustomDataLoader(items, conts, target, c)
 
     elif args.model_type=='fm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
-        model = FM(args, field_dims)
+        model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
         Dataset = SVDDataloader(items, embs, uidf, conts, target, c)

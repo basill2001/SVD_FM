@@ -33,7 +33,7 @@ class FeatureEmbedding(nn.Module):
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
 
     def forward(self, x):
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)
+        x += x.new_tensor(self.offsets).unsqueeze(0)
         x = self.embedding(x)
         return x
 
@@ -52,7 +52,7 @@ class FM_Linear(nn.Module):
         self.args = args
     
     def forward(self, x, x_cont, emb_x):
-        x = x + x.new_tensor(self.offsets).unsqueeze(0)
+        x += x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1)
 
@@ -61,8 +61,7 @@ class FM_Linear(nn.Module):
             item_emb = emb_x[:, self.args.num_eigenvector].unsqueeze(1).unsqueeze(1)
             nemb_x = torch.cat((user_emb, item_emb), 1)
             linear_term = torch.cat((linear_term, nemb_x), 1)
-        x = torch.sum(linear_term, dim=1) + self.bias
-        x = x + cont_linear
+        x = torch.sum(linear_term, dim=1) + self.bias + cont_linear
         return x
 
 class FM_Interaction(nn.Module):
@@ -95,6 +94,7 @@ class FM_Interaction(nn.Module):
             item_emb = svd_emb[:, self.args.num_eigenvector:].unsqueeze(1)
             cont = torch.matmul(x_cont, self.v)
             x = torch.cat((emb_x, user_emb, item_emb, cont), 1)
+            
             linear = torch.sum(x, 1)**2
             interaction = torch.sum(x**2, 1)
             

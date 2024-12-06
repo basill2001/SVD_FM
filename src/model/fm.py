@@ -32,20 +32,21 @@ class FM(pl.LightningModule):
         loss_y = weighted_bce.mean() + self.l2norm()
         return loss_y
     
-    def forward(self, x, x_cont, emb_x):
-        "original forward"
-        lin_term = self.linear(x=x, x_cont=x_cont, emb_x=None)
-        inter_term = self.interaction(emb_x, x_cont, None, None)
-        lin_term = self.sig(lin_term)
-        inter_term = self.sig(inter_term)
-        outs = torch.cat((lin_term, inter_term), 1)
-        x = self.last_linear(outs)
-        x = x.squeeze(1)
-        return x
+    # def forward(self, x, x_cont, emb_x):
+    #     "original forward"
+    #     lin_term = self.linear(x=x, x_cont=x_cont, emb_x=None)
+    #     inter_term = self.interaction(emb_x, x_cont, None, None)
+    #     lin_term = self.sig(lin_term)
+    #     inter_term = self.sig(inter_term)
+    #     outs = torch.cat((lin_term, inter_term), 1)
+    #     x = self.last_linear(outs)
+    #     x = x.squeeze(1)
+    #     return x
     
-    def embed_forward(self, x, x_cont, emb_x, svd_emb):
-        lin_term = self.linear(x, x_cont, emb_x)
-        inter_term = self.interaction(x=None, x_cont=x_cont, emb_x=emb_x, svd_emb=svd_emb)
+    def forward(self, x, x_cont, emb_x, svd_emb):
+        "embeded forward"
+        lin_term = self.linear(x=x, x_cont=x_cont, emb_x=svd_emb)
+        inter_term = self.interaction(x_cont=x_cont, emb_x=emb_x, svd_emb=svd_emb)
         lin_term = self.sig(lin_term)
         inter_term = self.sig(inter_term)
         outs = torch.cat((lin_term, inter_term), 1)
@@ -61,7 +62,7 @@ class FM(pl.LightningModule):
         else:
             x, svd_emb, ui, x_cont, y, c_values = batch
             embed_x = self.embedding(x)
-            y_pred = self.embed_forward(x, x_cont, embed_x, svd_emb)
+            y_pred = self.forward(x, x_cont, embed_x, svd_emb)
         loss_y = self.loss(y_pred, y, c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y

@@ -70,7 +70,7 @@ class Tester:
             else:
                 result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
             
-            topidx = torch.argsort(result,descending=True)[:]
+            topidx = torch.argsort(result, descending=True)[:]
             topidx = topidx.tolist()
 
             if user_id not in self.test_org['user_id'].unique():
