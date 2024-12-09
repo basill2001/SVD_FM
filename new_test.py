@@ -53,6 +53,7 @@ parser.add_argument('--model_type', type=str, default='fm',         help='fm or 
 
 args = parser.parse_args("")
 
+print("This is MAIN")
 # seed 값 고정
 def setseed(seed: int):
     import torch
