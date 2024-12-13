@@ -16,7 +16,6 @@ class MLP(nn.Module):
         self.deep_output_layer = nn.Linear(input_size, 1)
 
     def forward(self, x):
-        # input x : batch_size * (num_features* num_embedding)
         deep_x = x
         for layer in self.deep_layers:
             deep_x = layer(deep_x)
@@ -29,13 +28,10 @@ class FeatureEmbedding(nn.Module):
         super(FeatureEmbedding, self).__init__()
         self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
         self.field_dims = field_dims
-        # for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
-        # as the features should be embedded column-wise this operatation easily makes it possible
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
 
     def forward(self, x):
-        # input x: batch_size * num_features
-        x = x + x.new_tensor(self.offsets).unsqueeze(0) # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
+        x = x + x.new_tensor(self.offsets).unsqueeze(0)
         x = self.embedding(x)
         return x
 
