@@ -43,8 +43,8 @@ parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negativ
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
-parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
-parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
+parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset)')
+parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or 148 or 149')
 
 
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')

@@ -48,8 +48,7 @@ class FM_Linear(nn.Module):
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
         self.args = args
     
-    def forward(self,x, emb_x,x_cont):
-        # input x: batch_size * num_features
+    def forward(self, x, emb_x, x_cont):
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1)
