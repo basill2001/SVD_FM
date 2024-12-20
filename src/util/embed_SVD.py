@@ -1,5 +1,6 @@
 from scipy.sparse.linalg import svds
 from sklearn.decomposition import TruncatedSVD
+from gensim.models import LisModel
 
 class embed_SVD:
 
@@ -22,3 +23,6 @@ class embed_SVD:
         v = truncsvd.components_
         
         return u, v.T
+
+    def fit_svd_gensim(self, x):
+        model = LisModel(m=len(x), k=args.num_eigenvector, docs=x, use_svdlibc=True)

@@ -47,7 +47,6 @@ class FM_Linear(nn.Module):
         self.args = args
     
     def forward(self, x, x_cont):
-        # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1) # add continuous features
@@ -63,7 +62,7 @@ class FM_Interaction(nn.Module):
         self.args = args
         self.v = nn.Parameter(torch.randn(args.cont_dims, args.emb_dim))
     
-    def forward(self, x,x_cont):
+    def forward(self, x, x_cont):
         x_comb = x
         x_cont = x_cont.unsqueeze(1)
         linear = torch.sum(x_comb, 1)**2
