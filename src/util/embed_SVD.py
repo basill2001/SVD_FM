@@ -1,6 +1,5 @@
 from scipy.sparse.linalg import svds
 from sklearn.decomposition import TruncatedSVD
-from gensim.models import LisModel
 
 class embed_SVD:
 
