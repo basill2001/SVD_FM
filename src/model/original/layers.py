@@ -16,10 +16,9 @@ class MLP(nn.Module):
         self.deep_output_layer = nn.Linear(input_size, 1)
 
     def forward(self, x):
-        deep_x = x
         for layer in self.deep_layers:
-            deep_x = layer(deep_x)
-        x = self.deep_output_layer(deep_x)
+            x = layer(x)
+        x = self.deep_output_layer(x)
         return x
 
 class FeatureEmbedding(nn.Module):
@@ -63,10 +62,9 @@ class FM_Interaction(nn.Module):
         self.v = nn.Parameter(torch.randn(args.cont_dims, args.emb_dim))
     
     def forward(self, x, x_cont):
-        x_comb = x
         x_cont = x_cont.unsqueeze(1)
-        linear = torch.sum(x_comb, 1)**2
-        interaction = torch.sum(x_comb**2, 1)
+        linear = torch.sum(x, 1)**2
+        interaction = torch.sum(x**2, 1)
         if self.args.cont_dims!=0:
             cont_linear = torch.sum(torch.matmul(x_cont, self.v)**2, dim=1)
             cont_interaction = torch.sum(torch.matmul(x_cont**2, self.v**2), 1, keepdim=True)
@@ -74,22 +72,6 @@ class FM_Interaction(nn.Module):
             interaction = torch.cat((interaction, cont_interaction.squeeze(1)), 1)
 
         interaction = 0.5*torch.sum(linear-interaction, 1, keepdim=True)
-        cont_emb = self.v.unsqueeze(0).repeat(x_comb.shape[0], 1, 1)
+        cont_emb = self.v.unsqueeze(0).repeat(x.shape[0], 1, 1)
 
         return interaction, cont_emb
-
-
-        # x = x
-        # x_cont = x_cont.unsqueeze(1)
-        # linear = torch.sum(x, 1)**2
-        # interaction = torch.sum(x**2, 1)
-        # if self.args.cont_dims!=0:
-        #     cont_linear = torch.sum(torch.matmul(x_cont, self.v)**2, dim=1)
-        #     cont_interaction = torch.sum(torch.matmul(x_cont**2, self.v**2), 1, keepdim=True)
-        #     linear = torch.cat((linear, cont_linear), 1)
-        #     interaction = torch.cat((interaction, cont_interaction.squeeze(1)), 1)
-
-        # interaction = 0.5*torch.sum(linear-interaction, 1, keepdim=True)
-        # cont_emb = self.v.unsqueeze(0).repeat(x.shape[0], 1, 1)
-
-        # return interaction, cont_emb
