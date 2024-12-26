@@ -3,26 +3,24 @@ import torch.nn as nn
 import pytorch_lightning as pl
 from typing import Any
 
-import torch
 from src.model.original.fm import FM
-from src.model.original.layers import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
+from src.model.original.layers import FeatureEmbedding, FM_Linear, MLP
 
 
 class DeepFM(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(DeepFM, self).__init__()
-        self.args = args
-        self.lr = args.lr
-        self.field_dims = field_dims
         self.linear = FM_Linear(args, field_dims)
+        self.bceloss = nn.BCEWithLogitsLoss()
+        self.lr = args.lr
+        self.args = args
+        self.sig = nn.Sigmoid()
+        self.lastlinear = nn.Linear(3,1)
+        
         self.fm = FM(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
         self.embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss=nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
-
-        self.sig = nn.Sigmoid()
-        self.lastlinear = nn.Linear(3,1)
 
     def l2norm(self):
         reg = 0
@@ -34,34 +32,22 @@ class DeepFM(pl.LightningModule):
             reg += torch.norm(param)**2
         return reg*self.args.weight_decay
 
-
-    def mse(self, y_pred, y_true):
-        return self.bceloss(y_pred, y_true.float())
-    
-    def deep_part(self, x):
-        return self.mlp(x)
-
     def loss(self, y_pred, y_true, c_values):
-        mse = self.bceloss(y_pred, y_true.float())
-        weighted_bce = c_values * mse
-        loss_y = weighted_bce.mean()
-        loss_y += self.l2norm()
-
+        bce = self.bceloss(y_pred, y_true.float())
+        weighted_bce = c_values * bce
+        loss_y = weighted_bce.mean() + self.l2norm()
         return loss_y
     
     def forward(self, x, x_cont):
-        # FM part, here, x_hat means another arbritary input of data, for combining the results. 
-        
+        # FM part, here, x_hat means another arbritary input of data, for combining the results
         embed_x = self.embedding(x)
         fm_part, cont_emb, lin_term, inter_term = self.fm.forward(x=x, x_cont=x_cont, emb_x=embed_x)
-
-        if cont_emb is not None:
+        if self.args.cont_dims!=0: # 기존에는 if cont_emb is None이었음
             embed_x = torch.cat((embed_x, cont_emb), 1)
         feature_number = embed_x.shape[1]
         embed_x = embed_x.view(-1, feature_number * self.args.emb_dim)
-
-        new_x = embed_x
-        deep_part = self.mlp(new_x)
+        
+        deep_part = self.mlp(embed_x)
 
         lin_term = self.sig(lin_term)
         inter_term = self.sig(inter_term)

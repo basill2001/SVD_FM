@@ -2,25 +2,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-class MLP(nn.Module):
-
-    def __init__(self, args, input_size):
-        super(MLP, self).__init__()
-        self.args = args
-        self.deep_layers = nn.ModuleList()
-        for i in range(args.num_deep_layers):
-            self.deep_layers.append(nn.Linear(input_size, args.deep_layer_size))
-            self.deep_layers.append(nn.ReLU())
-            self.deep_layers.append(nn.Dropout(p=0.2))
-            input_size = args.deep_layer_size
-        self.deep_output_layer = nn.Linear(input_size, 1)
-
-    def forward(self, x):
-        for layer in self.deep_layers:
-            x = layer(x)
-        x = self.deep_output_layer(x)
-        return x
-
 class FeatureEmbedding(nn.Module):
 
     def __init__(self, args, field_dims):
@@ -54,6 +35,7 @@ class FM_Linear(nn.Module):
         x = x + cont_linear 
         return x
 
+
 class FM_Interaction(nn.Module):
 
     def __init__(self, args):
@@ -75,3 +57,22 @@ class FM_Interaction(nn.Module):
         cont_emb = self.v.unsqueeze(0).repeat(x.shape[0], 1, 1)
 
         return interaction, cont_emb
+
+class MLP(nn.Module):
+
+    def __init__(self, args, input_size):
+        super(MLP, self).__init__()
+        self.args = args
+        self.deep_layers = nn.ModuleList()
+        for i in range(args.num_deep_layers):
+            self.deep_layers.append(nn.Linear(input_size, args.deep_layer_size))
+            self.deep_layers.append(nn.ReLU())
+            self.deep_layers.append(nn.Dropout(p=0.2))
+            input_size = args.deep_layer_size
+        self.deep_output_layer = nn.Linear(input_size, 1)
+
+    def forward(self, x):
+        for layer in self.deep_layers:
+            x = layer(x)
+        x = self.deep_output_layer(x)
+        return x
