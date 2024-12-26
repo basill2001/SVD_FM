@@ -9,14 +9,11 @@ import pytorch_lightning as pl
 class FMSVD(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(FMSVD, self).__init__()
-
+        self.embedding = FeatureEmbedding(args, field_dims)
         self.lr = args.lr
         self.args = args
         self.sig = nn.Sigmoid()
-        self.last_linear = nn.Linear(2,1)
-        
-        if args.model_type=='fm':
-            self.embedding = FeatureEmbedding(args, field_dims)
+        self.last_linear = nn.Linear(2, 1)        
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
         self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
@@ -41,8 +38,8 @@ class FMSVD(pl.LightningModule):
     
     def forward(self, x, emb_x, svd_emb, x_cont):
         # x: batch_size * num_features
-        lin_term = self.linear(x, svd_emb, x_cont)
-        inter_term, cont_emb = self.interaction(emb_x, svd_emb, x_cont)
+        lin_term = self.linear(x=x, emb_x=svd_emb, x_cont=x_cont)
+        inter_term, cont_emb = self.interaction(emb_x=emb_x, svd_emb=svd_emb, x_cont=x_cont)
         # to normalize lin_term and inter_term to be in the same scale
         # so that the weights can be comparable
         lin_term_sig = self.sig(lin_term)
@@ -55,11 +52,11 @@ class FMSVD(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, svd_emb, ui, x_cont, y, c_values = batch
         embed_x = self.embedding(x)
-        y_pred, _, _, _ = self.forward(x, embed_x, svd_emb, x_cont)
-        loss_y = self.loss(y_pred, y, c_values)
+        y_pred, _, _, _ = self.forward(x=x, emb_x=embed_x, svd_emb=svd_emb, x_cont=x_cont)
+        loss_y = self.loss(y_pred=y_pred, y_true=y, c_values=c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
     
-    def configure_optimizers(self) ->Any:
+    def configure_optimizers(self) -> Any:
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer

@@ -42,7 +42,7 @@ class DeepFM(pl.LightningModule):
         return self.mlp(x)
 
     def loss(self, y_pred, y_true, c_values):
-        mse =self.bceloss(y_pred, y_true.float())
+        mse = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * mse
         loss_y = weighted_bce.mean()
         loss_y += self.l2norm()
@@ -53,7 +53,7 @@ class DeepFM(pl.LightningModule):
         # FM part, here, x_hat means another arbritary input of data, for combining the results. 
         
         embed_x = self.embedding(x)
-        fm_part, cont_emb, lin_term, inter_term = self.fm.forward(x, x_cont, embed_x)
+        fm_part, cont_emb, lin_term, inter_term = self.fm.forward(x=x, x_cont=x_cont, emb_x=embed_x)
 
         if cont_emb is not None:
             embed_x = torch.cat((embed_x, cont_emb), 1)
@@ -66,15 +66,15 @@ class DeepFM(pl.LightningModule):
         lin_term = self.sig(lin_term)
         inter_term = self.sig(inter_term)
         deep_part = self.sig(deep_part)
-        outs = torch.cat((lin_term,inter_term), 1)
-        outs = torch.cat((outs,deep_part), 1)
+
+        outs = torch.cat((lin_term, inter_term, deep_part), 1)
         y_pred = self.lastlinear(outs).squeeze(1)
 
         return y_pred
 
     def training_step(self, batch, batch_idx):
         x, x_cont, y, c_values = batch
-        y_pred = self.forward(x,x_cont)
+        y_pred = self.forward(x, x_cont)
         loss_y = self.loss(y_pred, y,c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y

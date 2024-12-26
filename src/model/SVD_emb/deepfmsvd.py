@@ -20,7 +20,7 @@ class DeepFMSVD(pl.LightningModule):
 
         self.embed_output_dim = (len(field_dims))* args.emb_dim + 2*args.emb_dim+(args.cont_dims-2*args.num_eigenvector)*args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
+        self.bceloss = nn.BCEWithLogitsLoss()
         self.lr = args.lr
         self.field_dims = field_dims
         self.sig = nn.Sigmoid()
@@ -45,16 +45,16 @@ class DeepFMSVD(pl.LightningModule):
         return self.mlp(x)
     
     def loss(self, y_pred, y_true, c_values):
-        bce =self.bceloss(y_pred, y_true.float())
+        bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
         loss_y = weighted_bce.mean()
         loss_y += self.l2norm()
         return loss_y
     
 
-    def forward(self, x,embed_x,svd_emb,x_cont):
+    def forward(self, x, embed_x, svd_emb, x_cont):
         # FM part, here, x_hat means another arbritary input of data, for combining the results. 
-        fm_part, cont_emb, lin_term, inter_term=self.fm(x, embed_x, svd_emb, x_cont)
+        fm_part, cont_emb, lin_term, inter_term = self.fm(x=x, emb_x=embed_x, svd_emb=svd_emb, x_cont=x_cont)
         user_emb = svd_emb[:, :self.args.num_eigenvector]
         item_emb = svd_emb[:, self.args.num_eigenvector:]
         
@@ -82,8 +82,8 @@ class DeepFMSVD(pl.LightningModule):
     def training_step(self, batch):
         x, svd_emb, ui, x_cont, y, c_values = batch
         embed_x = self.embedding(x)
-        y_pred = self.forward(x,embed_x, svd_emb, x_cont)
-        loss_y = self.loss(y_pred, y, c_values)
+        y_pred = self.forward(x=x, embed_x=embed_x, svd_emb=svd_emb, x_cont=x_cont)
+        loss_y = self.loss(y_pred=y_pred, y_true=y, c_values=c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
     

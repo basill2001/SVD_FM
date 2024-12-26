@@ -47,9 +47,9 @@ parser.add_argument('--cont_dims', type=int, default=0,            help='continu
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
 
-parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='SVD',    help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='fm',         help='fm or deepfm')
+parser.add_argument('--sparse', type=str, default='',               help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--embedding_type', type=str, default='original',    help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='deepfm',         help='fm or deepfm')
 
 args = parser.parse_args("")
 
