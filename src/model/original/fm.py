@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 class FM(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(FM, self).__init__()
-        if args.embedding_type=='fm':
+        if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
