@@ -40,12 +40,12 @@ class FM(pl.LightningModule):
         # FM part loss with interaction terms
         lin_term = self.linear(x=x, x_cont=x_cont)
         inter_term, cont_emb = self.interaction(x=emb_x, x_cont=x_cont)
+        
         lin_term_sig = self.sig(lin_term)
         inter_term_sig = self.sig(inter_term)
         outs = torch.cat((lin_term_sig, inter_term_sig), 1)
-        x = self.last_linear(outs)
-        x = x.squeeze(1)
-        return x, cont_emb, inter_term, lin_term  
+        y_pred = self.last_linear(outs).squeeze(1)
+        return y_pred, cont_emb, lin_term, inter_term
 
     def training_step(self, batch, batch_idx):
         x, x_cont, y, c_values = batch

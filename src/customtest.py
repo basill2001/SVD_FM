@@ -143,10 +143,11 @@ class Tester:
             X_cont = torch.tensor(X_cont, dtype=torch.float32)
     
             if self.args.model_type=='fm':
-                emb_x=self.model.embedding(X_cat)
+                emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
             else:
-                result = self.model.forward(X_cat, X_cont)
+                emb_x = self.model.embedding(X_cat)
+                result = self.model.forward(X_cat, X_cont, emb_x)
             
             topidx = torch.argsort(result, descending=True)[:]
             topidx = topidx.tolist()

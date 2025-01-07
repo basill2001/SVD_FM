@@ -11,14 +11,16 @@ Settings : `num_epochs = 100`, `data=ml100k`
 
 ## 2. original, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
-|metrics |value |
-|---|---|
-|precision|0.4330275229357798 | 
-|recall   |0.0772224272583683 |
-|hit rate |0.8577981651376146 |
-|rec rank |0.6479740061162079 |
-|dcg      |1.3304601933264755 |
-|time     |109.45841121673584 |
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision|0.4330275229357798 |0.4559633027522936 |
+|recall   |0.0772224272583683 |0.0830299130635841 |
+|hit rate |0.8577981651376146 |0.8669724770642202 |
+|rec rank |0.6479740061162079 |0.6832568807339449 |
+|dcg      |1.3304601933264755 |1.4123341604964321 |
+|time     |109.45841121673584 |108.51475644111633 |
+---
+<a name='footnote_1'>1</a> : deepfm에서 사용하는 `fm.forward`의 순서 바꾸기(`lin_term`<-`lin_term`, `inter_term`<-`inter_term`)
 
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  

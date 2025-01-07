@@ -32,7 +32,6 @@ class FeatureEmbedding(nn.Module):
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
 
     def forward(self, x):
-        # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0)  # this is for adding offset for each feature for example, movie id starts from 0, user id starts from 1000
         x = self.embedding(x)
         return x
@@ -48,7 +47,6 @@ class FM_Linear(nn.Module):
         self.args = args
     
     def forward(self, x, emb_x, x_cont):
-        # input x: batch_size * num_features
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1)

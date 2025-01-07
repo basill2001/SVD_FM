@@ -38,9 +38,9 @@ class DeepFM(pl.LightningModule):
         loss_y = weighted_bce.mean() + self.l2norm()
         return loss_y
     
-    def forward(self, x, x_cont):
+    def forward(self, x, x_cont, emb_x):
         # FM part, here, x_hat means another arbritary input of data, for combining the results
-        embed_x = self.embedding(x)
+        embed_x = emb_x
         fm_part, cont_emb, lin_term, inter_term = self.fm.forward(x=x, x_cont=x_cont, emb_x=embed_x)
         if self.args.cont_dims!=0: # 기존에는 if cont_emb is None이었음
             embed_x = torch.cat((embed_x, cont_emb), 1)
@@ -60,8 +60,9 @@ class DeepFM(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, x_cont, y, c_values = batch
-        y_pred = self.forward(x, x_cont)
-        loss_y = self.loss(y_pred, y,c_values)
+        embed_x = self.embedding(x)
+        y_pred = self.forward(x=x, x_cont=x_cont, emb_x=embed_x)
+        loss_y = self.loss(y_pred, y, c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
     
