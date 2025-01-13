@@ -48,8 +48,7 @@ class FM(pl.LightningModule):
         outs = torch.cat((lin_term_sig, inter_term_sig), 1)
         x = self.last_linear(outs)
         x = x.squeeze(1)
-        return x, cont_emb, inter_term, lin_term  
-
+        return x, cont_emb, lin_term, inter_term
     
     def training_step(self, batch, batch_idx):
         x, x_cont, y, c_values=batch
