@@ -33,14 +33,17 @@ Settings :`num_epochs = 100`, `data=ml100k`
 
 ## 3-1. NMF, FM
 Settings : `num_epochs = 100`, `data=ml100k`
-|metrics |value |
-|---|---|
-|precision |0.2628440366972477 |
-|recall    |0.0348235349105177 |
-|hit rate  |0.6261467889908257 |
-|rec rank  |0.4530581039755351 |
-|dcg       |0.8297901104417563 |
-|time      |95.44319891929626  |
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision |0.2628440366972477 |0.286238532110091 |
+|recall    |0.0348235349105177 |0.038260829741647 |
+|hit rate  |0.6261467889908257 |0.655963302752293 |
+|rec rank  |0.4530581039755351 |0.475458715596330 |
+|dcg       |0.8297901104417563 |0.896565102289302 |
+|time      |95.44319891929626  |97.27948427200317 |
+---
+기존에는 `nndsvda`가 쓰임  
+<a name='footnote_1'>1</a> : NMF의 `init`을 `nndsvd`로
 
 ## 4. SVD, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
@@ -50,7 +53,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |recall   |0.0967468529122231 |
 |hit rate |0.9197247706422018 |
 |rec rank |0.7345565749235473 |
-|dcg      |1.6030452903462624 | 
+|dcg      |1.6030452903462624 |
 |time     |139.4771749973297  |
  
 ## 4-1. NMF, DeepFM

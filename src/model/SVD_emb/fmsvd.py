@@ -19,7 +19,7 @@ class FMSVD(pl.LightningModule):
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
-        self.bceloss = nn.BCEWithLogitsLoss() # since bcewith logits is used, no need to add sigmoid layer in the end
+        self.bceloss = nn.BCEWithLogitsLoss()
 
 
     def l2norm(self):

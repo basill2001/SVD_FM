@@ -49,9 +49,9 @@ class Preprocessor:
         # merge item_info and user_info => 나중에 merge하는 작업은 밑에 있는 embedding merge에서 하는걸로 처리해주기
         ns_sampled_df = ns_sampled_df.merge(item_info, on='item_id', how='left')
         ns_sampled_df = ns_sampled_df.merge(user_info, on='user_id', how='left')
+        
+        
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
-        
-        
         if self.args.embedding_type=='SVD' or self.args.embedding_type=='original':
             user_embedding, item_embedding = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
         elif self.args.embedding_type=='NMF':

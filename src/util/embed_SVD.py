@@ -20,8 +20,6 @@ class embed_SVD:
         truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
         u = truncsvd.fit_transform(x)
         v = truncsvd.components_
-        
-        return u, v.T
+        print("sum of Explained Var. Ratio :", sum(truncsvd.explained_variance_ratio_))
 
-    def fit_svd_gensim(self, x):
-        model = LisModel(m=len(x), k=args.num_eigenvector, docs=x, use_svdlibc=True)
+        return u, v.T
