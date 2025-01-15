@@ -4,6 +4,7 @@ import numpy as np
 from src.util.preprocessor import Preprocessor
 import tqdm
 import torch
+import pdb
 # import copy
 
 class Tester:
@@ -45,6 +46,7 @@ class Tester:
 
 
     def svdtest(self):
+        
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
             if col=='user_id' or col=='item_id':
@@ -54,13 +56,14 @@ class Tester:
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
         
-        for user_id in tqdm.tqdm(user_list[:]):
+        for customerid in tqdm.tqdm(user_list[:]):
+            
+            if customerid not in self.test_org['user_id'].unique():
+                continue
 
-            temp = self.test_data_generator(user_id)
-            X_cat = temp[self.cat_cols].values
-            X_cat = torch.tensor(X_cat, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
-            X_cont = temp[self.cont_cols].values
-            X_cont = torch.tensor(X_cont, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
+            cur_user_df = self.test_data_generator(customerid)
+            X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
+            X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
 
             svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
             X_cont = X_cont[:, :-self.args.num_eigenvector*2]
@@ -70,37 +73,29 @@ class Tester:
                 result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
             else:
                 result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            
-            topidx = torch.argsort(result,descending=True)[:]
-            topidx = topidx.tolist()
 
-            if user_id not in self.test_org['user_id'].unique():
-                continue
+            topidx = torch.argsort(result, descending=True)[:].tolist()
 
             # print("customer id: ",user_id, end=" ")
-            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
-            ml = np.array(ml)
-            # reorder movie_list
-            ml = ml[topidx]
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([user_id])[0]]['item_id'].unique())
+            ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
+            ml = ml[topidx] # reorder movie_list
             
-            #  testing needs to be done with item_id that exists in train data
-            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
+            cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
+            cur_user_list = self.le_dict['item_id'].inverse_transform(cur_user_list) # testing needs to be done with item_id that exists in train data
             
             # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml, cur_userslist, assume_unique=True)
+            real_rec = np.setdiff1d(ml, cur_user_list, assume_unique=True).tolist()
             
             # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
 
-            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==user_id])
-            cur_user_test = cur_user_test[:, 1]
-            cur_user_test = np.unique(cur_user_test)
-            cur_user_test = cur_user_test.tolist()
+            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])[:, 1]
+            cur_user_test = np.unique(cur_user_test).tolist()
 
             if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
+                pdb.set_trace()
                 continue
+            
             # print("real product code: ", cur_user_test[:])
-            real_rec = real_rec.tolist()
 
             pred = real_rec[:self.args.topk]
             real = cur_user_test
