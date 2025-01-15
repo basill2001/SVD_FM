@@ -119,21 +119,22 @@ class Tester:
             cur_user_df = self.test_data_generator(customerid)
             X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64)
             X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32)
-    
-            if self.args.embedding_type!='original':
-                svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
-                X_cont = X_cont[:, :-self.args.num_eigenvector*2]
-                emb_x = self.model.embedding(X_cat)
             
             if self.args.embedding_type=='original' and self.args.model_type=='fm':
                 emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
             elif self.args.embedding_type=='original' and self.args.model_type=='deepfm':
                 result = self.model.forward(X_cat, X_cont)
-            elif self.args.embedding_type=='SVD' and self.args.model_type=='fm':
-                result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            elif self.args.embedding_type=='SVD' and self.args.model_type=='deepfm':
-                result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+            elif self.args.embedding_type=='SVD':
+                svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
+                X_cont = X_cont[:, :-self.args.num_eigenvector*2]
+                emb_x = self.model.embedding(X_cat)
+                if self.args.model_type=='fm':
+                    result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+                elif self.args.model_type=='deepfm':
+                    result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+            else:
+                result = []
 
 
             # if self.args.model_type=='fm':
@@ -185,6 +186,7 @@ class Tester:
         real = cur_user_test
 
         return pred, real
+    
     # metric 함수
     def get_precision(self, pred, real):
         precision=len(set(pred).intersection(set(real)))/len(pred)
