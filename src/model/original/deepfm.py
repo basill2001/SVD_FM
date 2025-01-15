@@ -54,7 +54,7 @@ class DeepFM(pl.LightningModule):
         
         embed_x = self.embedding(x)
         fm_part, cont_emb, lin_term, inter_term = self.fm.forward(x, x_cont, embed_x)
-
+        
         if cont_emb is not None:
             embed_x = torch.cat((embed_x, cont_emb), 1)
         feature_number = embed_x.shape[1]
