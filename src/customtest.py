@@ -109,6 +109,8 @@ class Tester:
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
 
+
+
         for customerid in tqdm.tqdm(user_list[:]):
 
             if customerid not in self.test_org['user_id'].unique():
@@ -118,11 +120,27 @@ class Tester:
             X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64)
             X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32)
     
-            if self.args.model_type=='fm':
+            if self.args.embedding_type!='original':
+                svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
+                X_cont = X_cont[:, :-self.args.num_eigenvector*2]
+                emb_x = self.model.embedding(X_cat)
+            
+            if self.args.embedding_type=='original' and self.args.model_type=='fm':
                 emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
-            else:
+            elif self.args.embedding_type=='original' and self.args.model_type=='deepfm':
                 result = self.model.forward(X_cat, X_cont)
+            elif self.args.embedding_type=='SVD' and self.args.model_type=='fm':
+                result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+            elif self.args.embedding_type=='SVD' and self.args.model_type=='deepfm':
+                result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
+
+
+            # if self.args.model_type=='fm':
+            #     emb_x = self.model.embedding(X_cat)
+            #     result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
+            # else:
+            #     result = self.model.forward(X_cat, X_cont)
             
             pred, real = self.getter(result, customerid, cur_user_df, train_org)
             

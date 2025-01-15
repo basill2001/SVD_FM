@@ -13,7 +13,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 Settings : `num_epochs = 100`, `data=ml100k`  
 |metrics |value |
 |---|---|
-|precision|0.4330275229357798 | 
+|precision|0.4330275229357798 |
 |recall   |0.0772224272583683 |
 |hit rate |0.8577981651376146 |
 |rec rank |0.6479740061162079 |
