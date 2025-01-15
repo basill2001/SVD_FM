@@ -85,15 +85,17 @@ class Preprocessor:
 
     
     def label_encode(self, cat_columns):
-        """
-        categorical values를 label encoding하는 le_dict
-        svd일 경우엔 user_id와 item_id를 제외한 것들을 encoding
-        original일 경우엔 전부 encoding
-        """
         # label_encoders is a dictionary for label_encoder, holds label encoder for each categorical column
         self.le_dict = {}
-        # when we use SVD, we don't need to embedd user_id and item_id
-        if self.args.embedding_type=='SVD' or self.args.embedding_type=='NMF':
+        
+        # when we are using original embedding, we need to encode user_id and item_id
+        if self.args.embedding_type=='original':
+            for col in cat_columns:
+                le = LabelEncoder()
+                self.train_df[col] = le.fit_transform(self.train_df[col])
+                self.le_dict[col] = le
+        # when we are using SVD, we don't need to embed user_id and item_id
+        else:
             for col in cat_columns:
                 le = LabelEncoder()
                 if col=='user_id' or col=='item_id':
@@ -101,12 +103,7 @@ class Preprocessor:
                 else:
                     self.train_df[col] = le.fit_transform(self.train_df[col])
                 self.le_dict[col] = le
-        # when we use original embedding, we need to encode user_id and item_id
-        else:
-            for col in cat_columns:
-                le = LabelEncoder()
-                self.train_df[col] = le.fit_transform(self.train_df[col])
-                self.le_dict[col] = le
+            
     
     def alter_dfs(self, cat_columns, cont_columns):
         self.cont_train_df = self.train_df.drop(cat_columns, axis=1)

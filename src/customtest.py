@@ -33,8 +33,9 @@ class Tester:
 
         final_df = test_df
 
-        for col in self.cat_cols: # 카테고리 column들을 차례로
+        for col in self.cat_cols:
             final_df[col] = self.le_dict[col].transform(final_df[col]) # 각 label encoder을 이용해 transform
+        
         if self.args.embedding_type=='SVD' or self.args.embedding_type=='NMF': # embedding type이 SVD면 user_id와 item_id도 transform시켜줌
             final_df['user_id'] = self.le_dict['user_id'].transform(final_df['user_id'])
             final_df['item_id'] = self.le_dict['item_id'].transform(final_df['item_id'])
@@ -87,7 +88,7 @@ class Tester:
             cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
             
             # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
+            real_rec = np.setdiff1d(ml, cur_userslist, assume_unique=True)
             
             # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
 
@@ -128,7 +129,7 @@ class Tester:
         train_org = self.train_org.copy(deep=True)
         for col in train_org.columns:
             if col=='user_id' or col=='item_id':
-                train_org[col]=self.le_dict[col].transform(train_org[col])
+                train_org[col] = self.le_dict[col].transform(train_org[col])
 
         user_list = self.le_dict['user_id'].classes_
         self.model.eval()
@@ -136,49 +137,38 @@ class Tester:
 
         for customerid in tqdm.tqdm(user_list[:]):
 
+            if customerid not in self.test_org['user_id'].unique():
+                continue
+
             temp = self.test_data_generator(customerid)
-            X_cat = temp[self.cat_cols].values
-            X_cat = torch.tensor(X_cat, dtype=torch.int64)
-            X_cont = temp[self.cont_cols].values
-            X_cont = torch.tensor(X_cont, dtype=torch.float32)
+            X_cat = torch.tensor(temp[self.cat_cols].values, dtype=torch.int64)
+            X_cont = torch.tensor(temp[self.cont_cols].values, dtype=torch.float32)
     
             if self.args.model_type=='fm':
-                emb_x=self.model.embedding(X_cat)
+                emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
             else:
                 result = self.model.forward(X_cat, X_cont)
             
-            topidx = torch.argsort(result, descending=True)[:]
-            topidx = topidx.tolist()
-
-            if customerid not in self.test_org['user_id'].unique():
-                continue
+            topidx = torch.argsort(result, descending=True)[:].tolist()
 
             # print("customer id: ",customerid, end=" ")
-            ml = list(self.le_dict['item_id'].inverse_transform(temp['item_id'].unique()))
-            ml = np.array(ml)
+            ml = self.le_dict['item_id'].inverse_transform(temp['item_id'].unique())
             ml = ml[topidx] # reorder movie_list
+
             cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
-            
-            # 여기 안본게 포함되어있을 수 있음 이거 처리해줘야함
-            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist)
-            
+            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist) # 여기 안본게 포함되어있을 수 있음 이거 처리해줘야함
             # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml,cur_userslist,assume_unique=True)
+            real_rec = np.setdiff1d(ml, cur_userslist, assume_unique=True).tolist()
             
-            # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
-
-            cur_user_test=np.array(self.test_org[(self.test_org['user_id'])==customerid])
-            cur_user_test=cur_user_test[:,1]
-            cur_user_test=np.unique(cur_user_test)
-            cur_user_test=cur_user_test.tolist()
-
-            if(len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
+            # print("top {} recommended product code: ".format(self.args.topk), real_rec[:self.args.topk])
+            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])
+            cur_user_test = np.unique(cur_user_test[:, 1]).tolist()
+            # print("real product code: ", cur_user_test[:])
+            
+            if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
                 continue
-            # print("real product code: ",cur_user_test[:])
-            real_rec = real_rec.tolist()
-
-
+            
             pred = real_rec[:self.args.topk]
             real = cur_user_test
 
