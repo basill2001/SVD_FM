@@ -73,32 +73,11 @@ class Tester:
                 result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
             else:
                 result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-
-            topidx = torch.argsort(result, descending=True)[:].tolist()
-
-            # print("customer id: ",user_id, end=" ")
-            ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
-            ml = ml[topidx] # reorder movie_list
             
-            cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
-            cur_user_list = self.le_dict['item_id'].inverse_transform(cur_user_list) # testing needs to be done with item_id that exists in train data
+            pred, real = self.getter(result, customerid, cur_user_df, train_org)
             
-            # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml, cur_user_list, assume_unique=True).tolist()
-            
-            # print("top {} recommended product code: ".format(self.args.topk),real_rec[:self.args.topk])
-
-            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])[:, 1]
-            cur_user_test = np.unique(cur_user_test).tolist()
-
-            if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
-                pdb.set_trace()
+            if pred==False:
                 continue
-            
-            # print("real product code: ", cur_user_test[:])
-
-            pred = real_rec[:self.args.topk]
-            real = cur_user_test
 
             precisions.append(self.get_precision(pred, real))
             recalls.append(self.get_recall(pred, real))
@@ -135,9 +114,9 @@ class Tester:
             if customerid not in self.test_org['user_id'].unique():
                 continue
 
-            temp = self.test_data_generator(customerid)
-            X_cat = torch.tensor(temp[self.cat_cols].values, dtype=torch.int64)
-            X_cont = torch.tensor(temp[self.cont_cols].values, dtype=torch.float32)
+            cur_user_df = self.test_data_generator(customerid)
+            X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64)
+            X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32)
     
             if self.args.model_type=='fm':
                 emb_x = self.model.embedding(X_cat)
@@ -145,27 +124,10 @@ class Tester:
             else:
                 result = self.model.forward(X_cat, X_cont)
             
-            topidx = torch.argsort(result, descending=True)[:].tolist()
-
-            # print("customer id: ",customerid, end=" ")
-            ml = self.le_dict['item_id'].inverse_transform(temp['item_id'].unique())
-            ml = ml[topidx] # reorder movie_list
-
-            cur_userslist = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
-            cur_userslist = self.le_dict['item_id'].inverse_transform(cur_userslist) # 여기 안본게 포함되어있을 수 있음 이거 처리해줘야함
-            # erase the things in ml that are in cur_userslist without changing the order
-            real_rec = np.setdiff1d(ml, cur_userslist, assume_unique=True).tolist()
+            pred, real = self.getter(result, customerid, cur_user_df, train_org)
             
-            # print("top {} recommended product code: ".format(self.args.topk), real_rec[:self.args.topk])
-            cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])
-            cur_user_test = np.unique(cur_user_test[:, 1]).tolist()
-            # print("real product code: ", cur_user_test[:])
-            
-            if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
+            if pred==False:
                 continue
-            
-            pred = real_rec[:self.args.topk]
-            real = cur_user_test
 
             precisions.append(self.get_precision(pred, real))
             recalls.append(self.get_recall(pred, real))
@@ -185,6 +147,26 @@ class Tester:
 
         return metrics
 
+    def getter(self, result, customerid, cur_user_df, train_org):
+        topidx = torch.argsort(result, descending=True)[:].tolist()
+        ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
+        ml = ml[topidx]
+
+        cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
+        cur_user_list = self.le_dict['item_id'].inverse_transform(cur_user_list)
+
+        real_rec = np.setdiff1d(ml, cur_user_list, assume_unique=True).tolist()
+
+        cur_user_test = np.array(self.test_org[(self.test_org['user_id'])==customerid])[:, 1]
+        cur_user_test = np.unique(cur_user_test).tolist()
+
+        if (len(cur_user_test)==0 or len(cur_user_test)<self.args.topk):
+            return False, False
+        
+        pred = real_rec[:self.args.topk]
+        real = cur_user_test
+
+        return pred, real
     # metric 함수
     def get_precision(self, pred, real):
         precision=len(set(pred).intersection(set(real)))/len(pred)
