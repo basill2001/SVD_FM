@@ -48,15 +48,11 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='NMF',    help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='fm',         help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='original',    help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='deepfm',         help='fm or deepfm')
 
 args = parser.parse_args("")
 
-# Explained Var. Ratio : 
-# [0.12184863 0.03790616 0.03264807 0.01845577 0.01716894 0.01476305
-#  0.01150263 0.01080754 0.00898461 0.00733483 0.0071543  0.00663576
-#  0.00631096 0.00599159 0.00589478 0.00585074]
 # seed 값 고정
 def setseed(seed: int):
     import torch

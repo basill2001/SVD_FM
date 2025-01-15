@@ -13,12 +13,12 @@ Settings : `num_epochs = 100`, `data=ml100k`
 Settings : `num_epochs = 100`, `data=ml100k`  
 |metrics |value |
 |---|---|
-|precision|0.4330275229357798 | 
-|recall   |0.0772224272583683 |
-|hit rate |0.8577981651376146 |
-|rec rank |0.6479740061162079 |
-|dcg      |1.3304601933264755 |
-|time     |109.45841121673584 |
+|precision|0.435779816513761 | 
+|recall   |0.082129396794385 |
+|hit rate |0.880733944954128 |
+|rec rank |0.664717125382263 |
+|dcg      |1.344460927879136 |
+|time     |164.4945077896118 |
 
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  
