@@ -48,7 +48,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='original',    help='SVD or NMF or original')
+parser.add_argument('--embedding_type', type=str, default='SVD',    help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='deepfm',         help='fm or deepfm')
 
 args = parser.parse_args("")
@@ -129,10 +129,6 @@ if __name__=='__main__':
     tester = Tester(args, model, data_info)
 
     result = tester.test()
-    # if args.embedding_type=='original':
-    #     result = tester.test()
-    # else:
-    #     result = tester.test()
 
     end_test_time = time.time()
     results[args.sparse + args.embedding_type + args.model_type] = result

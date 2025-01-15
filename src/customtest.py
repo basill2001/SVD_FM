@@ -44,60 +44,6 @@ class Tester:
         return final_df
     
 
-
-    def svdtest(self):
-        
-        train_org = self.train_org.copy(deep=True)
-        for col in train_org.columns:
-            if col=='user_id' or col=='item_id':
-                train_org[col] = self.le_dict[col].transform(train_org[col])
-
-        user_list = self.le_dict['user_id'].classes_
-        self.model.eval()
-        precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
-        
-        for customerid in tqdm.tqdm(user_list[:]):
-            
-            if customerid not in self.test_org['user_id'].unique():
-                continue
-
-            cur_user_df = self.test_data_generator(customerid)
-            X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64) # test_data_generator의 값 중 categorical column들의 값을 포함하는 텐서
-            X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32) # test_data_generator의 값 중 continuous columns(embeddings?)을 포함하는 텐서
-
-            svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
-            X_cont = X_cont[:, :-self.args.num_eigenvector*2]
-            emb_x = self.model.embedding(X_cat)
-
-            if self.args.model_type=='fm':
-                result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            else:
-                result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            
-            pred, real = self.getter(result, customerid, cur_user_df, train_org)
-            
-            if pred==False:
-                continue
-
-            precisions.append(self.get_precision(pred, real))
-            recalls.append(self.get_recall(pred, real))
-            hit_rates.append(self.get_hit_rate(pred, real))
-            reciprocal_ranks.append(self.get_reciprocal_rank(pred, real))
-            dcgs.append(self.get_dcg(pred, real))
-  
-        print("average precision: ",np.mean(precisions))
-
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
-        metrics = {'precision' : np.mean(precisions), 
-                   'recall' : np.mean(recalls),
-                   'hit_rate' : np.mean(hit_rates),
-                   'reciprocal_rank' : np.mean(reciprocal_ranks),
-                   'dcg' : np.mean(dcgs)}
-
-        return metrics
-
-
     def test(self):
 
         train_org = self.train_org.copy(deep=True)
@@ -109,8 +55,6 @@ class Tester:
         self.model.eval()
         precisions, recalls, hit_rates, reciprocal_ranks, dcgs = [], [], [], [], []
 
-
-
         for customerid in tqdm.tqdm(user_list[:]):
 
             if customerid not in self.test_org['user_id'].unique():
@@ -119,55 +63,30 @@ class Tester:
             cur_user_df = self.test_data_generator(customerid)
             X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64)
             X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32)
+
             
-            # if self.args.embedding_type=='original' and self.args.model_type=='fm':
-            #     emb_x = self.model.embedding(X_cat)
-            #     result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
-
-            # elif self.args.embedding_type=='original' and self.args.model_type=='deepfm':
-            #     result = self.model.forward(X_cat, X_cont)
-
-            # elif self.args.embedding_type=='SVD':
-            #     svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
-            #     X_cont = X_cont[:, :-self.args.num_eigenvector*2]
-            #     emb_x = self.model.embedding(X_cat)
-
-            #     if self.args.model_type=='fm':
-            #         result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-
-            #     elif self.args.model_type=='deepfm':
-            #         result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-            # else:
-            #     result = []
-
-
-            if self.args.model_type=='fm':
+            if self.args.embedding_type=='original' and self.args.model_type=='fm':
                 emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
-            else:
+
+            elif self.args.embedding_type=='original' and self.args.model_type=='deepfm':
                 result = self.model.forward(X_cat, X_cont)
-            
-            topidx = torch.argsort(result, descending=True)[:].tolist()
-            ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
-            ml = ml[topidx]
 
-            cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
-            cur_user_list = self.le_dict['item_id'].inverse_transform(cur_user_list)
+            else:
+                svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
+                X_cont = X_cont[:, :-self.args.num_eigenvector*2]
+                emb_x = self.model.embedding(X_cat)
 
-            real_rec = np.setdiff1d(ml, cur_user_list, assume_unique=True).tolist()
+                if self.args.model_type=='fm':
+                    result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
 
-            cur_user_test = self.test_org[self.test_org['user_id'] == customerid].values[:, 1]
-            cur_user_test = np.unique(cur_user_test).tolist()
+                else:
+                    result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
 
-            if len(cur_user_test)<self.args.topk:
-                continue
-            
-            pred = real_rec[:self.args.topk]
-            real = cur_user_test
             pred, real = self.getter(result, customerid, cur_user_df, train_org)
             
-            # if pred==False:
-            #     continue
+            if pred==False:
+                continue
 
             precisions.append(self.get_precision(pred, real))
             recalls.append(self.get_recall(pred, real))
@@ -176,7 +95,7 @@ class Tester:
             dcgs.append(self.get_dcg(pred, real))
 
         print("average precision: ",np.mean(precisions))
-        # totla user number and total item number
+        # total user number and total item number
         print("total user number: ",len(user_list))
         print("total item number: ",len(self.train_df['item_id'].unique()))
         metrics = {'precision' : np.mean(precisions), 
