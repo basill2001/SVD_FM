@@ -18,13 +18,10 @@ class DeepFM(pl.LightningModule):
         self.embedding = FeatureEmbedding(args, field_dims)
         self.embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss=nn.BCEWithLogitsLoss()
+        self.bceloss = nn.BCEWithLogitsLoss()
 
         self.sig = nn.Sigmoid()
         self.lastlinear = nn.Linear(3,1)
-
-    def mse(self, y_pred, y_true):
-        return self.bceloss(y_pred, y_true.float())
     
     def deep_part(self, x):
         return self.mlp(x)

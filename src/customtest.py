@@ -4,8 +4,6 @@ import numpy as np
 from src.util.preprocessor import Preprocessor
 import tqdm
 import torch
-import pdb
-# import copy
 
 class Tester:
 
