@@ -14,26 +14,14 @@ class DeepFM(pl.LightningModule):
         self.args = args
         self.lr = args.lr
         self.field_dims = field_dims
-        self.linear = FM_Linear(args, field_dims)
         self.fm = FM(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
         self.embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
         self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss=nn.BCEWithLogitsLoss() # since bcewith logits is used, we don't need to add sigmoid layer in the end
+        self.bceloss=nn.BCEWithLogitsLoss()
 
         self.sig = nn.Sigmoid()
         self.lastlinear = nn.Linear(3,1)
-
-    def l2norm(self):
-        reg = 0
-        for param in self.linear.parameters():
-            reg += torch.norm(param)**2
-        for param in self.embedding.parameters():
-            reg += torch.norm(param)**2
-        for param in self.mlp.parameters():
-            reg += torch.norm(param)**2
-        return reg*self.args.weight_decay
-
 
     def mse(self, y_pred, y_true):
         return self.bceloss(y_pred, y_true.float())
@@ -42,10 +30,9 @@ class DeepFM(pl.LightningModule):
         return self.mlp(x)
 
     def loss(self, y_pred, y_true, c_values):
-        mse =self.bceloss(y_pred, y_true.float())
+        mse = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * mse
         loss_y = weighted_bce.mean()
-        loss_y += self.l2norm()
 
         return loss_y
     
@@ -74,11 +61,11 @@ class DeepFM(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         x, x_cont, y, c_values = batch
-        y_pred = self.forward(x,x_cont)
+        y_pred = self.forward(x, x_cont)
         loss_y = self.loss(y_pred, y,c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
     
     def configure_optimizers(self) -> Any:
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.args.weight_decay)
         return optimizer
