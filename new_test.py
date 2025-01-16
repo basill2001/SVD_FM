@@ -79,7 +79,7 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    items, conts = data.cat_train_df, data.cont_train_df
+    cats, conts = data.cat_train_df, data.cont_train_df
     target, c = data.target, data.c
     field_dims = data.field_dims
     uidf = data.uidf.values
@@ -87,23 +87,23 @@ def trainer(args, data: Preprocessor):
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
     if args.model_type=='fm' and args.embedding_type=='original':
         model = FM(args, field_dims)
-        Dataset = CustomDataLoader(items, conts, target, c)
+        Dataset = CustomDataLoader(cats, conts, target, c)
 
     elif args.model_type=='deepfm' and args.embedding_type=='original':
         model = DeepFM(args, field_dims)
-        Dataset = CustomDataLoader(items, conts, target, c)
+        Dataset = CustomDataLoader(cats, conts, target, c)
 
     elif args.model_type=='fm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
+        Dataset = SVDDataloader(cats, embs, uidf, conts, target, c)
 
     elif args.model_type=='deepfm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = DeepFMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
+        Dataset = SVDDataloader(cats, embs, uidf, conts, target, c)
 
     else:
         raise NotImplementedError

@@ -20,6 +20,6 @@ class embed_SVD:
         truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
         u = truncsvd.fit_transform(x)
         v = truncsvd.components_
-        print("sum of Explained Var. Ratio :", sum(truncsvd.explained_variance_ratio_))
+        # print("sum of Explained Var. Ratio :", sum(truncsvd.explained_variance_ratio_))
 
         return u, v.T
