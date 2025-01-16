@@ -26,16 +26,16 @@ class DeepFMSVD(pl.LightningModule):
         self.sig = nn.Sigmoid()
         self.lastlinear = nn.Linear(3,1)
 
-    def l2norm(self):
+    # def l2norm(self):
 
-        reg = 0
-        for param in self.linear.parameters():
-            reg += torch.norm(param)**2
-        for param in self.embedding.parameters():
-            reg += torch.norm(param)**2
-        for param in self.mlp.parameters():
-            reg += torch.norm(param)**2
-        return reg * self.args.weight_decay
+    #     reg = 0
+    #     for param in self.linear.parameters():
+    #         reg += torch.norm(param)**2
+    #     for param in self.embedding.parameters():
+    #         reg += torch.norm(param)**2
+    #     for param in self.mlp.parameters():
+    #         reg += torch.norm(param)**2
+    #     return reg * self.args.weight_decay
 
 
     def mse(self, y_pred, y_true):
@@ -48,7 +48,6 @@ class DeepFMSVD(pl.LightningModule):
         bce =self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
         loss_y = weighted_bce.mean()
-        loss_y += self.l2norm()
         return loss_y
     
 
@@ -88,5 +87,5 @@ class DeepFMSVD(pl.LightningModule):
         return loss_y
     
     def configure_optimizers(self) -> Any:
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.args.weight_decay)
         return optimizer

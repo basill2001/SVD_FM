@@ -26,7 +26,8 @@ class FeatureEmbedding(nn.Module):
 
     def __init__(self, args, field_dims):
         super(FeatureEmbedding, self).__init__()
-        self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
+        # self.embedding = nn.Embedding(sum(field_dims+1), args.emb_dim)
+        self.embedding = nn.Embedding(sum(field_dims), args.emb_dim)    
         self.field_dims = field_dims
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
 
@@ -45,11 +46,17 @@ class FM_Linear(nn.Module):
         self.w = nn.Parameter(torch.randn(args.cont_dims))
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
     
-    def forward(self, x, x_cont):
+    def forward(self, x, x_cont, emb_x):
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1) # add continuous features
         
+        if self.args.embedding_type!='original':
+            user_emb = emb_x[:, 0].unsqueeze(1).unsqueeze(1)
+            item_emb = emb_x[:, self.args.num_eigenvector].unsqueeze(1).unsqueeze(1)
+            nemb_x = torch.cat((user_emb, item_emb), 1)
+            linear_term = torch.cat((linear_term, nemb_x), 1)
+
         x = torch.sum(linear_term, dim=1) + self.bias + cont_linear
         return x
 
