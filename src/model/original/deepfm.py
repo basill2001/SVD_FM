@@ -5,7 +5,7 @@ from typing import Any
 
 import torch
 from src.model.original.fm import FM
-from src.model.original.layers import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
+from src.model.layers_combined import FeatureEmbedding, FeatureEmbedding, FM_Linear, MLP
 
 
 class DeepFM(pl.LightningModule):
