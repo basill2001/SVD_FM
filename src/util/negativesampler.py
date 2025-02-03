@@ -36,9 +36,9 @@ class NegativeSampler:
 
         return c_appended_df
     
-    def negativesample(self, isuniform=False):
+    def negativesample(self, isuniform=True):
         # df을 가져온 후 손님마다 구매한 data와 (negative sampling을 통해 얻은) 구매하지 않은 data 생성해 return
-        # isuniform인 경우 frequency 이용
+        # isuniform인 경우 frequency 이용, 아닌 경우 이용 x
         unique_customers = self.original_df['user_id'].unique()
         df = self.original_df
         not_purchased_df = pd.DataFrame()
@@ -87,7 +87,7 @@ class NegativeSampler:
         if isuniform:
             not_purchased_df['c'] = 1
         else:
-            not_purchased_df=self.get_c(not_purchased_df, uu_sum=uu_sum, ii_sum=ii_sum) # user_frq, item_frq 이용
+            not_purchased_df = self.get_c(not_purchased_df, uu_sum=uu_sum, ii_sum=ii_sum) # user_frq, item_frq 이용
 
         # original과 not_purchased_df 합쳐서 return
         to_return = pd.concat([self.original_df, not_purchased_df], axis=0, ignore_index=True)

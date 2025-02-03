@@ -74,10 +74,10 @@ class FM_Interaction(nn.Module):
     
     def forward(self, emb_x, svd_emb, x_cont):
         x_cont = x_cont.unsqueeze(1)
-        user_emb = svd_emb[:,:self.args.num_eigenvector].unsqueeze(1)
-        item_emb = svd_emb[:, self.args.num_eigenvector:].unsqueeze(1)
-        x_comb = torch.cat((emb_x, user_emb), 1)
-        x_comb = torch.cat((x_comb, item_emb), 1)
+        user_emb = svd_emb[:, :self.args.num_eigenvector].unsqueeze(1) # (4096, 1, 16)
+        item_emb = svd_emb[:, self.args.num_eigenvector:].unsqueeze(1) # (4096, 1, 16)
+        x_comb = torch.cat((emb_x, user_emb), 1) # (4096, 22, 16) + (4096, 1, 16) = (4096, 23, 16)
+        x_comb = torch.cat((x_comb, item_emb), 1) # (4096, 23, 16) + (4096, 1, 16) = (4096, 24, 16)
 
         cont = torch.matmul(x_cont, self.v)
         x_comb = torch.cat((x_comb, cont), 1)

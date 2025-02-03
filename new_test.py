@@ -1,9 +1,9 @@
 import argparse
 import time
-# from copy import deepcopy
+import optuna
+import pickle
+from random import randint
 
-# from sklearn.preprocessing import LabelEncoder
-# from torch.utils.data import Dataset
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
@@ -38,7 +38,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
-parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
+parser.add_argument('--isuniform', type=bool, default=True,       help='true if uniform false if not')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
@@ -47,9 +47,10 @@ parser.add_argument('--cont_dims', type=int, default=0,            help='continu
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
 
-parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='SVD',    help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='deepfm',         help='fm or deepfm')
+parser.add_argument('--sparse', type=str, default='',                    help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--embedding_type', type=str, default='SVD',         help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='fm',          help='fm or deepfm')
+parser.add_argument('--explained_variance_ratio', type=float, default=1, help='explained variance ratio for SVD')
 
 args = parser.parse_args("")
 
@@ -60,8 +61,18 @@ def setseed(seed: int):
     import numpy as np
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
+    torch.manual_seed(seed)    
     torch.cuda.manual_seed_all(seed)
+
+def result_checker(result_dict: dict, result: dict, model_desc: str):
+    try:
+        for key in result.keys():
+            result_dict[model_desc][key].append(result[key])
+    except KeyError:
+        result_dict[model_desc] = {}
+        for key in result.keys():
+            result_dict[model_desc][key] = [result[key]]
+    return result_dict
 
 def getdata(args):
     
@@ -116,21 +127,56 @@ def trainer(args, data: Preprocessor):
     end = time.time()
     return model, end-start
 
-if __name__=='__main__':
-    setseed(seed=42)
+def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    results = {}
+    args.num_eigenvector = trial.suggest_int('num_eigenvector', 8, 64)
+    args.emb_dim = args.num_eigenvector
     data_info = getdata(args)
 
     print('model type is', args.model_type)
     print('embedding type is', args.embedding_type)
     model, timeee = trainer(args, data_info)
-    test_time = time.time()
     tester = Tester(args, model, data_info)
 
     result = tester.test()
+    result['exp_var'] = args.explained_variance_ratio
+    model_desc = str(args.num_eigenvector) + args.embedding_type + args.model_type
+    
+    global result_dict
+    result_dict = result_checker(result_dict, result, model_desc)
 
-    end_test_time = time.time()
-    results[args.sparse + args.embedding_type + args.model_type] = result
-    print(results)
-    print("time :", timeee)
+    return result['precision']
+
+result_dict = {}
+study = optuna.create_study(direction='maximize')
+fixed_trial = optuna.trial.FixedTrial({'num_eigenvector': 16, 'emb_dim' : 16})
+
+study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+study.optimize(objective, n_trials=99)
+
+print("Scores of Best Trial :", study.best_trial.value)
+# print("Params of Best Trial :", study.best_trial.params)
+
+with open('./notes/total_result.pickle', mode='wb') as f:
+    pickle.dump(result_dict, f)
+with open('./notes/study.pickle', mode='wb') as f:
+    pickle.dump(study, f)
+
+# if __name__=='__main__':
+#     setseed(seed=42)
+#     args = parser.parse_args("")
+#     results = {}
+#     data_info = getdata(args)
+
+#     print('model type is', args.model_type)
+#     print('embedding type is', args.embedding_type)
+#     model, timeee = trainer(args, data_info)
+#     test_time = time.time()
+#     tester = Tester(args, model, data_info)
+
+#     result = tester.test()
+
+#     end_test_time = time.time()
+#     results[args.sparse + args.embedding_type + args.model_type] = result
+#     print(results)
+#     print("time :", timeee)

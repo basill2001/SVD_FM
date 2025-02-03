@@ -1,7 +1,7 @@
 from typing import Any
 import torch
 import torch.nn as nn
-from src.model.layers_combined import FeatureEmbedding, FM_Linear, FM_Interaction
+from src.model.original.layers import FeatureEmbedding, FM_Linear, FM_Interaction
 
 import pytorch_lightning as pl
 from itertools import chain

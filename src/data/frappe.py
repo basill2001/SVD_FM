@@ -56,7 +56,8 @@ class Frappe:
         useritem_matrix = train.pivot_table(index='user_id',columns='item',values='rating')
         useritem_matrix = useritem_matrix.fillna(0)
         useritem_matrix = useritem_matrix.astype(float)
-        useritem_matrix[useritem_matrix >= 1] = 1
+        useritem_matrix[useritem_matrix < 3] = 0
+        useritem_matrix[useritem_matrix >= 3] = 1
         useritem_matrix = useritem_matrix.to_numpy()
         # x dtype to float
         useritem_matrix = useritem_matrix.astype(float)  
