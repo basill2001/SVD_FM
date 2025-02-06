@@ -26,14 +26,18 @@ Settings : `num_epochs = 100`, `data=ml100k`
 
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  
-|metrics |value |
-|---|---|
-|precision|0.198165137614678 |
-|recall   |0.026636492888923 |
-|hit rate |0.550458715596330 |
-|rec rank |0.371292048929663 |
-|dcg      |0.631741929379093 |
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision|0.198165137614678 |0.201376146788990 |
+|recall   |0.026636492888923 |0.027525045805599 |
+|hit rate |0.550458715596330 |0.548165137614678 |
+|rec rank |0.371292048929663 |0.394571865443425 |
+|dcg      |0.631741929379093 |0.663941525467433 |
+|exp_var  |0.319258351509169 |0.319258351509169 | 
+|const err|6.433065941228768 |6.433065941228768 |
 |time     |104.9781436920166 |
+---
+<a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample
 
 ## 3-1. NMF, FM
 Settings : `num_epochs = 100`, `data=ml100k`

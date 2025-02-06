@@ -53,8 +53,9 @@ class Preprocessor:
         
         # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
         if self.args.embedding_type=='SVD' or self.args.embedding_type=='original':
-            user_embedding, item_embedding, exp_var = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
+            user_embedding, item_embedding, exp_var, const_err  = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
             self.args.explained_variance_ratio = exp_var
+            self.args.construction_err = const_err
         elif self.args.embedding_type=='NMF':
             user_embedding, item_embedding = embed_NMF(self.args).fit_nmf(self.ui_matrix)
         

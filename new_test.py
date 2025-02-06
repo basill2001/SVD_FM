@@ -1,8 +1,10 @@
 import argparse
 import time
 import optuna
+from optuna.samplers import RandomSampler
 import pickle
 from random import randint
+import numpy as np
 
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
@@ -38,7 +40,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
-parser.add_argument('--isuniform', type=bool, default=True,       help='true if uniform false if not')
+parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not(when using frequency)')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
@@ -122,33 +124,39 @@ def trainer(args, data: Preprocessor):
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
     
     start = time.time()
-    trainer = pl.Trainer(max_epochs=args.num_epochs_training)
+    trainer = pl.Trainer(max_epochs=args.num_epochs_training, enable_checkpointing=False, logger=False)
     trainer.fit(model, dataloader)
     end = time.time()
     return model, end-start
 
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.num_eigenvector = trial.suggest_int('num_eigenvector', 8, 64)
+    args.num_eigenvector = trial.suggest_int('num_eigenvector', 8, 128)
     args.emb_dim = args.num_eigenvector
-    data_info = getdata(args)
+    seeds = [42, 43, 44, 45, 46]
+    scores = []
+    for seed in seeds:
+        setseed(seed=seed)
+        data_info = getdata(args)
 
-    print('model type is', args.model_type)
-    print('embedding type is', args.embedding_type)
-    model, timeee = trainer(args, data_info)
-    tester = Tester(args, model, data_info)
+        print('model type is', args.model_type)
+        print('embedding type is', args.embedding_type)
+        model, timeee = trainer(args, data_info)
+        tester = Tester(args, model, data_info)
 
-    result = tester.test()
-    result['exp_var'] = args.explained_variance_ratio
-    model_desc = str(args.num_eigenvector) + args.embedding_type + args.model_type
-    
-    global result_dict
-    result_dict = result_checker(result_dict, result, model_desc)
+        result = tester.test()
+        result['exp_var'] = args.explained_variance_ratio
+        result['const_err'] = args.construction_err
+        model_desc = str(args.num_eigenvector) + args.embedding_type + args.model_type
 
-    return result['precision']
+        global result_dict
+        result_dict = result_checker(result_dict, result, model_desc)
+        scores.append(result['precision'])
+
+    return np.mean(scores)
 
 result_dict = {}
-study = optuna.create_study(direction='maximize')
+study = optuna.create_study(sampler=RandomSampler())
 fixed_trial = optuna.trial.FixedTrial({'num_eigenvector': 16, 'emb_dim' : 16})
 
 study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
@@ -157,7 +165,7 @@ study.optimize(objective, n_trials=99)
 print("Scores of Best Trial :", study.best_trial.value)
 # print("Params of Best Trial :", study.best_trial.params)
 
-with open('./notes/total_result.pickle', mode='wb') as f:
+with open('./notes/total_result_2.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
 with open('./notes/study.pickle', mode='wb') as f:
     pickle.dump(study, f)
@@ -175,6 +183,8 @@ with open('./notes/study.pickle', mode='wb') as f:
 #     tester = Tester(args, model, data_info)
 
 #     result = tester.test()
+#     result['exp_var'] = args.explained_variance_ratio
+#     result['const_err'] = args.construction_err
 
 #     end_test_time = time.time()
 #     results[args.sparse + args.embedding_type + args.model_type] = result
