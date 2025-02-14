@@ -21,7 +21,7 @@ class FM(pl.LightningModule):
         self.last_linear = nn.Linear(2,1)
 
     def loss(self, y_pred, y_true, c_values):
-        # calculate weighted mse with l2 regularization
+        # calculate weighted bce with l2 regularization
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
         loss_y = weighted_bce.mean()

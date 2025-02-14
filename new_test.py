@@ -37,12 +37,12 @@ parser.add_argument('--deep_layer_size', type=int, default=128,    help='Size of
 parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('--save_model', type=bool, default=False)
 
-parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
+parser.add_argument('--emb_dim', type=int, default=8,             help='embedding dimension for DeepFM')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
 parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not(when using frequency)')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
-parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
+parser.add_argument('--num_eigenvector', type=int, default=8,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
@@ -51,7 +51,7 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 parser.add_argument('--sparse', type=str, default='',                    help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--embedding_type', type=str, default='SVD',         help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='fm',          help='fm or deepfm')
+parser.add_argument('--model_type', type=str, default='deepfm',          help='fm or deepfm')
 parser.add_argument('--explained_variance_ratio', type=float, default=1, help='explained variance ratio for SVD')
 
 args = parser.parse_args("")
@@ -131,7 +131,7 @@ def trainer(args, data: Preprocessor):
 
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.num_eigenvector = trial.suggest_int('num_eigenvector', 8, 128)
+    args.num_eigenvector = trial.suggest_int('num_eigenvector', 1, 100)
     args.emb_dim = args.num_eigenvector
     seeds = [42, 43, 44, 45, 46]
     scores = []
@@ -157,17 +157,16 @@ def objective(trial: optuna.trial.Trial) :
 
 result_dict = {}
 study = optuna.create_study(sampler=RandomSampler())
-fixed_trial = optuna.trial.FixedTrial({'num_eigenvector': 16, 'emb_dim' : 16})
 
-study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
-study.optimize(objective, n_trials=99)
+# study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+study.optimize(objective, n_trials=100)
 
 print("Scores of Best Trial :", study.best_trial.value)
 # print("Params of Best Trial :", study.best_trial.params)
 
-with open('./notes/total_result_2.pickle', mode='wb') as f:
+with open('./notes/deepfm_result.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
-with open('./notes/study.pickle', mode='wb') as f:
+with open('./notes/deep_study.pickle', mode='wb') as f:
     pickle.dump(study, f)
 
 # if __name__=='__main__':
