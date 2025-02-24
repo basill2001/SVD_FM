@@ -59,7 +59,7 @@ class Preprocessor:
         elif self.args.embedding_type=='NMF':
             user_embedding, item_embedding = embed_NMF(self.args).fit_nmf(self.ui_matrix)
         
-        print(self.args.explained_variance_ratio)
+        # print(self.args.explained_variance_ratio)
         if self.args.sparse=='sparse':
             threshold = 0.01
             user_embedding[(-1*threshold<user_embedding) & (user_embedding<threshold)] = 0

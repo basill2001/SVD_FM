@@ -13,8 +13,8 @@ class FMSVD(pl.LightningModule):
         self.lr = args.lr
         self.args = args
         self.sig = nn.Sigmoid()
-        self.last_linear = nn.Linear(2,1)
-        
+        self.last_linear = nn.Linear(2, 1)
+
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)

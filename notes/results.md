@@ -63,7 +63,17 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |rec rank |0.7345565749235473 |
 |dcg      |1.6030452903462624 |
 |time     |139.4771749973297  |
- 
+
+Settings : `num_epochs = 100`, `data=ml1m`  
+|metrics |value |
+|---|---|
+|precision|0.061092715231788 |
+|recall   |0.006461771101007 |
+|hit rate |0.198675496688741 |
+|rec rank |0.123311258278145 |
+|dcg      |0.192781487260310 |
+|time     |991.7204689979553 |
+
 ## 4-1. NMF, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |

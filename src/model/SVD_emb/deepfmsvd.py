@@ -27,7 +27,6 @@ class DeepFMSVD(pl.LightningModule):
         self.lastlinear = nn.Linear(3,1)
 
     # def l2norm(self):
-
     #     reg = 0
     #     for param in self.linear.parameters():
     #         reg += torch.norm(param)**2
@@ -37,7 +36,6 @@ class DeepFMSVD(pl.LightningModule):
     #         reg += torch.norm(param)**2
     #     return reg * self.args.weight_decay
 
-
     def mse(self, y_pred, y_true):
         return self.bceloss(y_pred, y_true.float())
 
@@ -45,7 +43,7 @@ class DeepFMSVD(pl.LightningModule):
         return self.mlp(x)
     
     def loss(self, y_pred, y_true, c_values):
-        bce =self.bceloss(y_pred, y_true.float())
+        bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
         loss_y = weighted_bce.mean()
         return loss_y

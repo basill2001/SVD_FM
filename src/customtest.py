@@ -94,8 +94,8 @@ class Tester:
 
         print("average precision: ",np.mean(precisions))
         # total user number and total item number
-        print("total user number: ",len(user_list))
-        print("total item number: ",len(self.train_df['item_id'].unique()))
+        # print("total user number: ",len(user_list))
+        # print("total item number: ",len(self.train_df['item_id'].unique()))
         metrics = {'precision' : np.mean(precisions), 
                    'recall' : np.mean(recalls),
                    'hit_rate' : np.mean(hit_rates),
