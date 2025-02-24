@@ -49,8 +49,8 @@ parser.add_argument('--cont_dims', type=int, default=0,            help='continu
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
 parser.add_argument('--sparse', type=str, default='',                    help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='SVD',         help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='deepfm',          help='fm or deepfm')
+parser.add_argument('--embedding_type', type=str, default='original',         help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='fm',          help='fm or deepfm')
 parser.add_argument('--explained_variance_ratio', type=float, default=1, help='explained variance ratio for SVD')
 
 args = parser.parse_args("")
@@ -130,64 +130,64 @@ def trainer(args, data: Preprocessor):
 
 
 # This is code for multiple experiments
-# def objective(trial: optuna.trial.Trial) :
-#     args = parser.parse_args("")
-#     args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
-
-#     model_desc = str(args.num_deep_layers) + 'layers' + args.embedding_type + args.model_type
-#     print("model is :", model_desc)
-#     seeds = [42, 43, 44, 45, 46]
-#     scores = []
-#     for seed in seeds:
-#         setseed(seed=seed)
-#         data_info = getdata(args)
-
-#         model, timeee = trainer(args, data_info)
-#         tester = Tester(args, model, data_info)
-
-#         result = tester.test()
-#         result['exp_var'] = args.explained_variance_ratio
-#         result['const_err'] = args.construction_err
-
-#         global result_dict
-#         result_dict = result_checker(result_dict, result, model_desc)
-#         scores.append(result['precision'])
-
-#     return np.mean(scores)
-
-# result_dict = {}
-# study = optuna.create_study(direction='maximize')
-
-# # study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
-# study.optimize(objective, n_trials=50)
-
-# print("Scores of Best Trial :", study.best_trial.value)
-# print("Params of Best Trial :", study.best_trial.params)
-
-# with open('./notes/deepfm_result_2.pickle', mode='wb') as f:
-#     pickle.dump(result_dict, f)
-# # with open('./notes/deep_study.pickle', mode='wb') as f:
-# #     pickle.dump(study, f)
-
-
-# # This is code for single run
-if __name__=='__main__':
-    setseed(seed=42)
+def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    results = {}
-    data_info = getdata(args)
+    args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
 
-    print('model type is', args.model_type)
-    print('embedding type is', args.embedding_type)
-    model, timeee = trainer(args, data_info)
-    test_time = time.time()
-    tester = Tester(args, model, data_info)
+    model_desc = str(args.num_deep_layers) + 'layers' + args.embedding_type + args.model_type
+    print("model is :", model_desc)
+    seeds = [42, 43, 44, 45, 46]
+    scores = []
+    for seed in seeds:
+        setseed(seed=seed)
+        data_info = getdata(args)
 
-    result = tester.test()
-    result['exp_var'] = args.explained_variance_ratio
-    result['const_err'] = args.construction_err
+        model, timeee = trainer(args, data_info)
+        tester = Tester(args, model, data_info)
 
-    end_test_time = time.time()
-    results[args.sparse + args.embedding_type + args.model_type] = result
-    print(results)
-    print("time :", timeee)
+        result = tester.test()
+        result['exp_var'] = args.explained_variance_ratio
+        result['const_err'] = args.construction_err
+
+        global result_dict
+        result_dict = result_checker(result_dict, result, model_desc)
+        scores.append(result['precision'])
+
+    return np.mean(scores)
+
+result_dict = {}
+study = optuna.create_study(direction='maximize')
+
+# study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+study.optimize(objective, n_trials=3)
+
+print("Scores of Best Trial :", study.best_trial.value)
+print("Params of Best Trial :", study.best_trial.params)
+
+with open('./notes/negativity.pickle', mode='wb') as f:
+    pickle.dump(result_dict, f)
+# with open('./notes/deep_study.pickle', mode='wb') as f:
+#     pickle.dump(study, f)
+
+
+# # # This is code for single run
+# if __name__=='__main__':
+#     setseed(seed=42)
+#     args = parser.parse_args("")
+#     results = {}
+#     data_info = getdata(args)
+
+#     print('model type is', args.model_type)
+#     print('embedding type is', args.embedding_type)
+#     model, timeee = trainer(args, data_info)
+#     test_time = time.time()
+#     tester = Tester(args, model, data_info)
+
+#     result = tester.test()
+#     result['exp_var'] = args.explained_variance_ratio
+#     result['const_err'] = args.construction_err
+
+#     end_test_time = time.time()
+#     results[args.sparse + args.embedding_type + args.model_type] = result
+#     print(results)
+#     print("time :", timeee)

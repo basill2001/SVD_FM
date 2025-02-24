@@ -70,15 +70,15 @@ class Tester:
             elif self.args.embedding_type=='original' and self.args.model_type=='deepfm':
                 result = self.model.forward(X_cat, X_cont)
 
-            else:
+            else: # svd
                 svd_emb = X_cont[:, -self.args.num_eigenvector*2:]
                 X_cont = X_cont[:, :-self.args.num_eigenvector*2]
                 emb_x = self.model.embedding(X_cat)
 
-                if self.args.model_type=='fm':
+                if self.args.model_type=='fm': # svd & fm
                     result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
 
-                else:
+                else: # svd & deepfm
                     result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
 
             pred, real = self.getter(result, customerid, cur_user_df, train_org)
