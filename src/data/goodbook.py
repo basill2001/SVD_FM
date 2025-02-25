@@ -2,16 +2,15 @@ import pandas as pd
 
 class GoodBook:
     def __init__(self, args):
-        self.args=args
+        self.args = args
         #self.fold=fold #should be integer
 
     def data_getter(self):
         
-        #train, test loading for each fold
+        # train, test loading for each fold
         train, test = self.train_test_getter()
         movie_info = self.movie_getter()
         user_info = self.user_getter()
-        #ui_matrix=self.get_user_item_matrix()
 
         # change column names movie_id to item_id
         train = train.rename(columns={'book_id':'item_id'})
@@ -20,7 +19,7 @@ class GoodBook:
         movie_info.rename(columns={'book_id':'item_id'}, inplace=True)
 
 
-        return train,test,movie_info,user_info
+        return train, test, movie_info, user_info
     
 
     def train_test_getter(self):
@@ -45,17 +44,4 @@ class GoodBook:
     def user_getter(self):
         # simple preproccess of user_data
         user_info = pd.read_csv('dataset/goodbook/user_info.csv')
-
         return user_info
-    
-    def get_user_item_matrix(self):
-        train, _ = self.train_test_getter()
-        useritem_matrix = train.pivot_table(index='user_id',columns='movie_id',values='rating')
-        useritem_matrix = useritem_matrix.fillna(0)
-        useritem_matrix = useritem_matrix.astype(float)
-        useritem_matrix[useritem_matrix >= 1] = 1
-        useritem_matrix = useritem_matrix.to_numpy()
-        # x dtype to float
-        useritem_matrix = useritem_matrix.astype(float)  
-
-        return useritem_matrix

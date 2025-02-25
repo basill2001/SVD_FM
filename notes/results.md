@@ -9,7 +9,19 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |dcg      |1.395779875067928 |1.380704386660955 |
 |time     |108.8987262248992 |94.04915118217468 |
 ---
-<a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용
+<a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용  
+
+Settings : `num_epochs = 100`, `data=goodbook`  
+|metrics |value |
+|---|---|
+|precision|0.002744338749052 |
+|recall   |0.000373540249956 |
+|hit rate |0.013637511575048 |
+|rec rank |0.006358559923674 |
+|dcg      |0.008179955909675 |
+|exp_var  |0.103176519270626 |
+|time     |4482.333681344986 |
+
 
 ## 2. original, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  

@@ -30,7 +30,7 @@ class FM(pl.LightningModule):
     def forward(self, x, x_cont, emb_x):
         # FM part loss with interaction terms
         # x: batch_size * num_features
-        lin_term = self.linear(x=x, x_cont=x_cont, emb_x=None)
+        lin_term = self.linear(x=x, x_cont=x_cont)
         inter_term, cont_emb = self.interaction(emb_x, x_cont)
         lin_term_sig = self.sig(lin_term)
         inter_term_sig = self.sig(inter_term)
