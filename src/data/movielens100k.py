@@ -5,7 +5,7 @@ class Movielens100k:
 
         self.data_dir = data_dir
         self.data_file = data_file
-        self.fold = fold #should be integer
+        self.fold = fold
 
     def data_getter(self):
         

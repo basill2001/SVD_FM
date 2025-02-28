@@ -37,17 +37,16 @@ parser.add_argument('--deep_layer_size', type=int, default=128,    help='Size of
 parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('--save_model', type=bool, default=False)
 
-parser.add_argument('--emb_dim', type=int, default=8,             help='embedding dimension for DeepFM')
+parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
-parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not(when using frequency)')
+parser.add_argument('--isuniform', type=bool, default=True,       help='true if uniform false if not(when using frequency)')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
-parser.add_argument('--num_eigenvector', type=int, default=8,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
+parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero for negative sampling')
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
-
 
 parser.add_argument('--sparse', type=str, default='',                    help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--embedding_type', type=str, default='SVD',         help='SVD or NMF or original')
@@ -129,63 +128,66 @@ def trainer(args, data: Preprocessor):
     end = time.time()
     return model, end-start
 
-def objective(trial: optuna.trial.Trial) :
-    args = parser.parse_args("")
-    args.num_eigenvector = trial.suggest_int('num_eigenvector', 1, 100)
-    args.emb_dim = args.num_eigenvector
-    seeds = [42, 43, 44, 45, 46]
-    scores = []
-    for seed in seeds:
-        setseed(seed=seed)
-        data_info = getdata(args)
 
-        print('model type is', args.model_type)
-        print('embedding type is', args.embedding_type)
-        model, timeee = trainer(args, data_info)
-        tester = Tester(args, model, data_info)
+# This is code for multiple experiments
+# def objective(trial: optuna.trial.Trial) :
+#     args = parser.parse_args("")
+#     args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
 
-        result = tester.test()
-        result['exp_var'] = args.explained_variance_ratio
-        result['const_err'] = args.construction_err
-        model_desc = str(args.num_eigenvector) + args.embedding_type + args.model_type
+#     model_desc = str(args.num_deep_layers) + 'layers' + args.embedding_type + args.model_type
+#     print("model is :", model_desc)
+#     seeds = [42, 43, 44, 45, 46]
+#     scores = []
+#     for seed in seeds:
+#         setseed(seed=seed)
+#         data_info = getdata(args)
 
-        global result_dict
-        result_dict = result_checker(result_dict, result, model_desc)
-        scores.append(result['precision'])
+#         model, timeee = trainer(args, data_info)
+#         tester = Tester(args, model, data_info)
 
-    return np.mean(scores)
+#         result = tester.test()
+#         result['exp_var'] = args.explained_variance_ratio
+#         result['const_err'] = args.construction_err
 
-result_dict = {}
-study = optuna.create_study(sampler=RandomSampler())
+#         global result_dict
+#         result_dict = result_checker(result_dict, result, model_desc)
+#         scores.append(result['precision'])
 
-# study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
-study.optimize(objective, n_trials=100)
+#     return np.mean(scores)
 
-print("Scores of Best Trial :", study.best_trial.value)
+# result_dict = {}
+# study = optuna.create_study(direction='maximize')
+
+# # study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+# study.optimize(objective, n_trials=50)
+
+# print("Scores of Best Trial :", study.best_trial.value)
 # print("Params of Best Trial :", study.best_trial.params)
 
-with open('./notes/deepfm_result.pickle', mode='wb') as f:
-    pickle.dump(result_dict, f)
-with open('./notes/deep_study.pickle', mode='wb') as f:
-    pickle.dump(study, f)
+# with open('./notes/deepfm_result_2.pickle', mode='wb') as f:
+#     pickle.dump(result_dict, f)
+# # with open('./notes/deep_study.pickle', mode='wb') as f:
+# #     pickle.dump(study, f)
 
-# if __name__=='__main__':
-#     setseed(seed=42)
-#     args = parser.parse_args("")
-#     results = {}
-#     data_info = getdata(args)
 
-#     print('model type is', args.model_type)
-#     print('embedding type is', args.embedding_type)
-#     model, timeee = trainer(args, data_info)
-#     test_time = time.time()
-#     tester = Tester(args, model, data_info)
+# # This is code for single run
+if __name__=='__main__':
+    setseed(seed=42)
+    args = parser.parse_args("")
+    results = {}
+    data_info = getdata(args)
 
-#     result = tester.test()
-#     result['exp_var'] = args.explained_variance_ratio
-#     result['const_err'] = args.construction_err
+    print('model type is', args.model_type)
+    print('embedding type is', args.embedding_type)
+    model, timeee = trainer(args, data_info)
+    test_time = time.time()
+    tester = Tester(args, model, data_info)
 
-#     end_test_time = time.time()
-#     results[args.sparse + args.embedding_type + args.model_type] = result
-#     print(results)
-#     print("time :", timeee)
+    result = tester.test()
+    result['exp_var'] = args.explained_variance_ratio
+    result['const_err'] = args.construction_err
+
+    end_test_time = time.time()
+    results[args.sparse + args.embedding_type + args.model_type] = result
+    print(results)
+    print("time :", timeee)

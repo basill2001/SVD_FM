@@ -36,6 +36,17 @@ Settings : `num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용
 
+Settings : `num_epochs = 100`, `data=goodbook`  
+|metrics |value |
+|---|---|
+|precision|0.393299099250778 |
+|recall   |0.053248408478951 |
+|hit rate |0.796026601565788 |
+|rec rank |0.595497656929595 |
+|dcg      |1.213845092514998 |
+|exp_var  |0.103176519270626 |
+|time     |3065.868867158889 |
+
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  
 |metrics |value |value<sup>[1](#footnote_1)</sup> |
@@ -49,7 +60,19 @@ Settings :`num_epochs = 100`, `data=ml100k`
 |const err|6.433065941228768 |6.433065941228768 |
 |time     |104.9781436920166 |
 ---
-<a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample
+<a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample  
+
+Settings : `num_epochs = 100`, `data=goodbook`  
+|metrics |value |
+|---|---|
+|precision|0.214883407694250 |
+|recall   |0.029467402417454 |
+|hit rate |0.593821028706120 |
+|rec rank |0.340588433369812 |
+|dcg      |0.627133449344527 |
+|exp_var  |0.103176519270626 |
+|time     |3452.502673149109 |
+
 
 ## 3-1. NMF, FM
 Settings : `num_epochs = 100`, `data=ml100k`
