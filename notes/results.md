@@ -1,35 +1,78 @@
 ## 1. original, FM
 Settings : `num_epochs = 100`, `data=ml100k`  
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision|0.444954128440366 |0.450000000000000 |
+|recall   |0.079367341518164 |0.080490733571922 |
+|hit rate |0.853211009174311 |0.848623853211009 |
+|rec rank |0.679931192660550 |0.655504587155963 |
+|dcg      |1.395779875067928 |1.380704386660955 |
+|time     |108.8987262248992 |94.04915118217468 |
+---
+<a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용  
+
+Settings : `num_epochs = 100`, `data=goodbook`  
 |metrics |value |
 |---|---|
-|precision|0.444954128440366 |
-|recall   |0.079367341518164 |
-|hit rate |0.853211009174311 |
-|rec rank |0.679931192660550 |
-|dcg      |1.395779875067928 |
-|time     |108.8987262248992 |
+|precision|0.002744338749052 |
+|recall   |0.000373540249956 |
+|hit rate |0.013637511575048 |
+|rec rank |0.006358559923674 |
+|dcg      |0.008179955909675 |
+|exp_var  |0.103176519270626 |
+|time     |4482.333681344986 |
+
 
 ## 2. original, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision|0.435779816513761 |0.456880733944954 |
+|recall   |0.082129396794385 |0.081870688544863 |
+|hit rate |0.880733944954128 |0.869266055045871 |
+|rec rank |0.664717125382263 |0.670451070336391 |
+|dcg      |1.344460927879136 |1.398971377667273 |
+|time     |164.4945077896118 |94.88665699958801 |
+---
+<a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용
+
+Settings : `num_epochs = 100`, `data=goodbook`  
 |metrics |value |
 |---|---|
-|precision|0.435779816513761 | 
-|recall   |0.082129396794385 |
-|hit rate |0.880733944954128 |
-|rec rank |0.664717125382263 |
-|dcg      |1.344460927879136 |
-|time     |164.4945077896118 |
+|precision|0.393299099250778 |
+|recall   |0.053248408478951 |
+|hit rate |0.796026601565788 |
+|rec rank |0.595497656929595 |
+|dcg      |1.213845092514998 |
+|exp_var  |0.103176519270626 |
+|time     |3065.868867158889 |
 
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  
+|metrics |value |value<sup>[1](#footnote_1)</sup> |
+|---|---|---|
+|precision|0.198165137614678 |0.201376146788990 |
+|recall   |0.026636492888923 |0.027525045805599 |
+|hit rate |0.550458715596330 |0.548165137614678 |
+|rec rank |0.371292048929663 |0.394571865443425 |
+|dcg      |0.631741929379093 |0.663941525467433 |
+|exp_var  |0.319258351509169 |0.319258351509169 | 
+|const err|6.433065941228768 |6.433065941228768 |
+|time     |104.9781436920166 |
+---
+<a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample  
+
+Settings : `num_epochs = 100`, `data=goodbook`  
 |metrics |value |
 |---|---|
-|precision|0.198165137614678 |
-|recall   |0.026636492888923 |
-|hit rate |0.550458715596330 |
-|rec rank |0.371292048929663 |
-|dcg      |0.631741929379093 |
-|time     |104.9781436920166 |
+|precision|0.214883407694250 |
+|recall   |0.029467402417454 |
+|hit rate |0.593821028706120 |
+|rec rank |0.340588433369812 |
+|dcg      |0.627133449344527 |
+|exp_var  |0.103176519270626 |
+|time     |3452.502673149109 |
+
 
 ## 3-1. NMF, FM
 Settings : `num_epochs = 100`, `data=ml100k`
@@ -55,7 +98,17 @@ Settings : `num_epochs = 100`, `data=ml100k`
 |rec rank |0.7345565749235473 |
 |dcg      |1.6030452903462624 |
 |time     |139.4771749973297  |
- 
+
+Settings : `num_epochs = 100`, `data=ml1m`  
+|metrics |value |
+|---|---|
+|precision|0.061092715231788 |
+|recall   |0.006461771101007 |
+|hit rate |0.198675496688741 |
+|rec rank |0.123311258278145 |
+|dcg      |0.192781487260310 |
+|time     |991.7204689979553 |
+
 ## 4-1. NMF, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |

@@ -1,9 +1,11 @@
 import argparse
 import time
-# from copy import deepcopy
+import optuna
+from optuna.samplers import RandomSampler
+import pickle
+from random import randint
+import numpy as np
 
-# from sklearn.preprocessing import LabelEncoder
-# from torch.utils.data import Dataset
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
@@ -27,7 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
-parser.add_argument('--num_epochs_training', type=int, default=100,         help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=100,  help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2,      help='Number of deep layers')
@@ -38,7 +40,7 @@ parser.add_argument('--save_model', type=bool, default=False)
 parser.add_argument('--emb_dim', type=int, default=16,             help='embedding dimension for DeepFM')
 parser.add_argument('--topk', type=int, default=5,                 help='top k items to recommend')
 parser.add_argument('--fold', type=int, default=1,                 help='fold number for folded dataset')
-parser.add_argument('--isuniform', type=bool, default=False,       help='true if uniform false if not')
+parser.add_argument('--isuniform', type=bool, default=True,       help='true if uniform false if not(when using frequency)')
 parser.add_argument('--ratio_negative', type=int, default=0.2,     help='negative sampling ratio rate for each user')
 parser.add_argument('--num_eigenvector', type=int, default=16,     help='Number of eigenvectors for SVD, note that this must be same as emb_dim')
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
@@ -46,10 +48,10 @@ parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero 
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
-
-parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='original',    help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='deepfm',         help='fm or deepfm')
+parser.add_argument('--sparse', type=str, default='',                    help='if user_embedding and item_embedding matrices are sparse or not')
+parser.add_argument('--embedding_type', type=str, default='SVD',         help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='deepfm',          help='fm or deepfm')
+parser.add_argument('--explained_variance_ratio', type=float, default=1, help='explained variance ratio for SVD')
 
 args = parser.parse_args("")
 
@@ -60,8 +62,18 @@ def setseed(seed: int):
     import numpy as np
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
+    torch.manual_seed(seed)    
     torch.cuda.manual_seed_all(seed)
+
+def result_checker(result_dict: dict, result: dict, model_desc: str):
+    try:
+        for key in result.keys():
+            result_dict[model_desc][key].append(result[key])
+    except KeyError:
+        result_dict[model_desc] = {}
+        for key in result.keys():
+            result_dict[model_desc][key] = [result[key]]
+    return result_dict
 
 def getdata(args):
     
@@ -79,7 +91,7 @@ def getdata(args):
 
 def trainer(args, data: Preprocessor):
 
-    items, conts = data.cat_train_df, data.cont_train_df
+    cats, conts = data.cat_train_df, data.cont_train_df
     target, c = data.target, data.c
     field_dims = data.field_dims
     uidf = data.uidf.values
@@ -87,23 +99,23 @@ def trainer(args, data: Preprocessor):
     # I know this is a bit inefficient to create all four classes for model, but I did this for simplicity
     if args.model_type=='fm' and args.embedding_type=='original':
         model = FM(args, field_dims)
-        Dataset = CustomDataLoader(items, conts, target, c)
+        Dataset = CustomDataLoader(cats, conts, target, c)
 
     elif args.model_type=='deepfm' and args.embedding_type=='original':
         model = DeepFM(args, field_dims)
-        Dataset = CustomDataLoader(items, conts, target, c)
+        Dataset = CustomDataLoader(cats, conts, target, c)
 
     elif args.model_type=='fm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
+        Dataset = SVDDataloader(cats, embs, uidf, conts, target, c)
 
     elif args.model_type=='deepfm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
         model = DeepFMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
-        Dataset = SVDDataloader(items, embs, uidf, conts, target, c)
+        Dataset = SVDDataloader(cats, embs, uidf, conts, target, c)
 
     else:
         raise NotImplementedError
@@ -111,11 +123,54 @@ def trainer(args, data: Preprocessor):
     dataloader = DataLoader(Dataset, batch_size=args.batch_size, shuffle=True, num_workers=20)
     
     start = time.time()
-    trainer = pl.Trainer(max_epochs=args.num_epochs_training)
+    trainer = pl.Trainer(max_epochs=args.num_epochs_training, enable_checkpointing=False, logger=False)
     trainer.fit(model, dataloader)
     end = time.time()
     return model, end-start
 
+
+# This is code for multiple experiments
+# def objective(trial: optuna.trial.Trial) :
+#     args = parser.parse_args("")
+#     args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
+
+#     model_desc = str(args.num_deep_layers) + 'layers' + args.embedding_type + args.model_type
+#     print("model is :", model_desc)
+#     seeds = [42, 43, 44, 45, 46]
+#     scores = []
+#     for seed in seeds:
+#         setseed(seed=seed)
+#         data_info = getdata(args)
+
+#         model, timeee = trainer(args, data_info)
+#         tester = Tester(args, model, data_info)
+
+#         result = tester.test()
+#         result['exp_var'] = args.explained_variance_ratio
+#         result['const_err'] = args.construction_err
+
+#         global result_dict
+#         result_dict = result_checker(result_dict, result, model_desc)
+#         scores.append(result['precision'])
+
+#     return np.mean(scores)
+
+# result_dict = {}
+# study = optuna.create_study(direction='maximize')
+
+# # study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+# study.optimize(objective, n_trials=50)
+
+# print("Scores of Best Trial :", study.best_trial.value)
+# print("Params of Best Trial :", study.best_trial.params)
+
+# with open('./notes/deepfm_result_2.pickle', mode='wb') as f:
+#     pickle.dump(result_dict, f)
+# # with open('./notes/deep_study.pickle', mode='wb') as f:
+# #     pickle.dump(study, f)
+
+
+# # This is code for single run
 if __name__=='__main__':
     setseed(seed=42)
     args = parser.parse_args("")
@@ -128,10 +183,9 @@ if __name__=='__main__':
     test_time = time.time()
     tester = Tester(args, model, data_info)
 
-    if args.embedding_type=='SVD' or args.embedding_type=='NMF':
-        result = tester.svdtest()
-    else:
-        result = tester.test()
+    result = tester.test()
+    result['exp_var'] = args.explained_variance_ratio
+    result['const_err'] = args.construction_err
 
     end_test_time = time.time()
     results[args.sparse + args.embedding_type + args.model_type] = result

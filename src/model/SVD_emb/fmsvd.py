@@ -13,8 +13,8 @@ class FMSVD(pl.LightningModule):
         self.lr = args.lr
         self.args = args
         self.sig = nn.Sigmoid()
-        self.last_linear = nn.Linear(2,1)
-        
+        self.last_linear = nn.Linear(2, 1)
+
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
@@ -41,8 +41,8 @@ class FMSVD(pl.LightningModule):
     
     def forward(self, x, emb_x, svd_emb, x_cont):
         # x: batch_size * num_features
-        lin_term = self.linear(x, svd_emb, x_cont)
-        inter_term, cont_emb = self.interaction(emb_x, svd_emb, x_cont)
+        lin_term = self.linear(x=x, emb_x=svd_emb, x_cont=x_cont)
+        inter_term, cont_emb = self.interaction(emb_x=emb_x, svd_emb=svd_emb, x_cont=x_cont)
         # to normalize lin_term and inter_term to be in the same scale
         # so that the weights can be comparable
         lin_term_sig = self.sig(lin_term)

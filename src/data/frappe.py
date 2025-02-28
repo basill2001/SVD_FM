@@ -36,7 +36,6 @@ class Frappe:
         return train_data,test_data
 
     def movie_getter(self):
-        
         #read movie data
         movie_info = pd.read_csv('dataset/frappe/meta_app_item_info.csv')
         movie_info = movie_info.rename(columns={'rating':'quality'})
@@ -50,8 +49,7 @@ class Frappe:
         return user_info
     
     def get_user_item_matrix(self):
-
-        #get useritem matrix
+        # get useritem matrix
         train, _ = self.train_test_getter()
         useritem_matrix = train.pivot_table(index='user_id',columns='item',values='rating')
         useritem_matrix = useritem_matrix.fillna(0)

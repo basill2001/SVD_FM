@@ -1,5 +1,6 @@
 from scipy.sparse.linalg import svds
 from sklearn.decomposition import TruncatedSVD
+import math
 
 class embed_SVD:
 
@@ -16,10 +17,11 @@ class embed_SVD:
         return u, vt.T
 
     def fit_truncatedSVD(self, x):
-
         truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
         u = truncsvd.fit_transform(x)
         v = truncsvd.components_
-        print("sum of Explained Var. Ratio :", sum(truncsvd.explained_variance_ratio_))
+        exp_var = sum(truncsvd.explained_variance_ratio_)
+        full_var = truncsvd.full_variance_
+        const_err = math.sqrt(full_var*(1-exp_var))
 
-        return u, v.T
+        return u, v.T, exp_var, const_err 
