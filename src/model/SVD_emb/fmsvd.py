@@ -21,7 +21,6 @@ class FMSVD(pl.LightningModule):
         self.interaction = FM_Interaction(args)
         self.bceloss = nn.BCEWithLogitsLoss()
 
-
     def l2norm(self):
         reg = 0
         for param in self.linear.parameters():
