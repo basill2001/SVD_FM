@@ -102,12 +102,24 @@ Settings : `num_epochs = 100`, `data=ml100k`
 Settings : `num_epochs = 100`, `data=ml1m`  
 |metrics |value |
 |---|---|
-|precision|0.061092715231788 |
-|recall   |0.006461771101007 |
-|hit rate |0.198675496688741 |
-|rec rank |0.123311258278145 |
-|dcg      |0.192781487260310 |
-|time     |991.7204689979553 |
+|precision|0.18105960264900 |
+|recall   |0.03187354130476 |
+|hit rate |0.50711920529801 |
+|rec rank |0.30680187637969 |
+|dcg      |0.54466047580628 |
+|time     |970.119738817215 |
+
+Settings : `num_epochs = 100`, `data=goodbook`  
+|metrics |value |
+|---|---|
+|precision|0.477767488845862 |
+|recall   |0.064715489760303 |
+|hit rate |0.880461318292785 |
+|rec rank |0.708383141117378 |
+|dcg      |1.490577470951982 |
+|exp_var  |0.103176519270626 |
+|const err|8.125652967151472 |
+|time     |3519.840175390243 |
 
 ## 4-1. NMF, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`

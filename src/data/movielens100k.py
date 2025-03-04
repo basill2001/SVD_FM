@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 
 class Movielens100k:
     def __init__(self, data_dir, data_file, fold):
@@ -10,8 +11,8 @@ class Movielens100k:
     def data_getter(self):
         
         # train, test loading for each fold
-        self.train = pd.read_csv('dataset/ml-100k/u'+str(self.fold)+'.base',sep='\t',header=None, names=['user_id','movie_id','rating','timestamp'],encoding='latin-1')
-        self.test = pd.read_csv('dataset/ml-100k/u'+str(self.fold)+'.test',sep='\t',header=None, names=['user_id','movie_id','rating','timestamp'],encoding='latin-1')
+        self.train = pd.read_csv('dataset/ml-100k/u'+str(self.fold)+'.base',sep='\t',header=None, names=['user_id','movie_id','rating','timestamp'], encoding='latin-1')
+        self.test = pd.read_csv('dataset/ml-100k/u'+str(self.fold)+'.test',sep='\t',header=None, names=['user_id','movie_id','rating','timestamp'], encoding='latin-1')
         self.train = self.train.rename(columns={'movie_id':'item_id'})
         self.test = self.test.rename(columns={'movie_id':'item_id'})
         

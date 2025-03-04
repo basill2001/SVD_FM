@@ -8,7 +8,7 @@ from src.data.goodbook import GoodBook
 class DataWrapper:
 
     def __init__(self, args) -> None:
-        pass
+        self.args = args
         # datatype에 따른 데이터를 self.data에 저장
         if args.datatype=="ml100k":
             self.data = Movielens100k('dataset/ml-100k','u.data', args.fold)
@@ -22,6 +22,7 @@ class DataWrapper:
         #     self.data = Shopping(args)
         else:
             raise NotImplementedError
+        
 
         # 각 data마다 만들어진 class에 있는 data_getter 사용
         self.train, self.test, self.item_info, self.user_info = self.data.data_getter()
@@ -37,13 +38,13 @@ class DataWrapper:
         ui_matrix = ui_matrix.fillna(0)
         ui_matrix = ui_matrix.astype(float)
         # 별점이 3 이상일 경우 1로 설정
-        ui_matrix[ui_matrix < 3]  = 0
+        # 별점이 1 이상 3 미만일 경우 negativity score 부여
+        ui_matrix[(ui_matrix>0) & (ui_matrix < 3)]  = self.args.negativity_score
         ui_matrix[ui_matrix >= 3] = 1
         ui_matrix = ui_matrix.to_numpy().astype(float)
 
         return ui_matrix
     
-
     def get_col_type(self):
         # 범주형, 연속형을 나누어서 저장
         cat_cols = []
