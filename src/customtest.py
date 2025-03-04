@@ -62,7 +62,6 @@ class Tester:
             X_cat = torch.tensor(cur_user_df[self.cat_cols].values, dtype=torch.int64)
             X_cont = torch.tensor(cur_user_df[self.cont_cols].values, dtype=torch.float32)
 
-            
             if self.args.embedding_type=='original' and self.args.model_type=='fm':
                 emb_x = self.model.embedding(X_cat)
                 result, _, _, _ = self.model.forward(X_cat, X_cont, emb_x)
@@ -77,7 +76,7 @@ class Tester:
 
                 if self.args.model_type=='fm':
                     result, _, _, _ = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
-
+                    
                 else:
                     result = self.model.forward(X_cat, emb_x, svd_emb, X_cont)
 
@@ -106,7 +105,7 @@ class Tester:
 
     def getter(self, result, customerid, cur_user_df, train_org):
         topidx = torch.argsort(result, descending=True)[:].tolist()
-        ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
+        ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique()))
         ml = ml[topidx]
 
         cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
@@ -151,5 +150,5 @@ class Tester:
         dcg = 0
         for i in range(len(pred)):
             if pred[i] in real:
-                dcg +=1/np.log2(i+2)
+                dcg += 1/np.log2(i+2)
         return dcg

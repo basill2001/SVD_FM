@@ -133,10 +133,10 @@ def trainer(args, data: Preprocessor):
 # This is code for multiple experiments
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
-    # args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
+    # args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
+    args.num_deep_layers = trial.suggest_int('num_deep_layers', 1, 10)
 
-    model_desc = str(args.negativity_score)
+    model_desc = str(args.num_deep_layers)
     print("model is :", model_desc)
     seeds = [42, 43, 44, 45, 46]
     scores = []
@@ -160,13 +160,14 @@ def objective(trial: optuna.trial.Trial) :
 result_dict = {}
 study = optuna.create_study(direction='maximize')
 
-study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
-study.optimize(objective, n_trials=30)
+# fixed_trial = optuna.trial.FixedTrial({'negativity_score': 0})
+# study.optimize(lambda trial: objective(fixed_trial), n_trials=1)
+study.optimize(objective, n_trials=5)
 
 print("Scores of Best Trial :", study.best_trial.value)
 print("Params of Best Trial :", study.best_trial.params)
 
-with open('./results/negativity.pickle', mode='wb') as f:
+with open('./results/temp.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
 # # with open('./notes/deep_study.pickle', mode='wb') as f:
 # #     pickle.dump(study, f)
