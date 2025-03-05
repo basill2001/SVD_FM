@@ -151,5 +151,5 @@ class Tester:
         dcg = 0
         for i in range(len(pred)):
             if pred[i] in real:
-                dcg +=1/np.log2(i+2)
+                dcg += 1/np.log2(i+2)
         return dcg
