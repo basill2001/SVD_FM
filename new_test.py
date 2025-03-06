@@ -52,7 +52,7 @@ parser.add_argument('--isuniform', type=bool, default=True,            help='tru
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
-
+parser.add_argument('--negativity_score', type=float, default=0,        help='score for ratings between 1~3')
 args = parser.parse_args("")
 
 # seed 값 고정
@@ -127,8 +127,6 @@ def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
     # args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
     # args.weight_decay = trial.suggest_float('weight_decay', 0.000001, 0.001)
-    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD'])
-    args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
 
     model_desc = args.embedding_type + args.model_type
     print("model is :", model_desc)
@@ -149,14 +147,14 @@ def objective(trial: optuna.trial.Trial) :
         result_dict = result_checker(result_dict, result, model_desc)
         scores.append(result['precision'])
 
-    return 0
+    return np.mean(result['precision'])
 
 result_dict = {}
 
-search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
-sampler = GridSampler(search_space)
-study = optuna.create_study(sampler=sampler)
-study.optimize(objective, n_trials=4)
+# search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
+# sampler = GridSampler(search_space)
+study = optuna.create_study(direction='maximize')
+study.optimize(objective, n_trials=29)
 
 with open('results/temp.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
