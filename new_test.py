@@ -47,12 +47,13 @@ parser.add_argument('--c_zeros', type=int, default=5,              help='c_zero 
 parser.add_argument('--cont_dims', type=int, default=0,            help='continuous dimension(that changes for each dataset))')
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
-parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
-parser.add_argument('--isuniform', type=bool, default=True,            help='true if uniform false if not')
+parser.add_argument('--datatype', type=str, default="ml100k",           help='ml100k or ml1m or shopping or goodbook or frappe')
+parser.add_argument('--isuniform', type=bool, default=True,             help='true if uniform false if not')
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
 parser.add_argument('--negativity_score', type=float, default=0,        help='score for ratings between 1~3')
+
 args = parser.parse_args("")
 
 # seed 값 고정
@@ -125,12 +126,11 @@ def trainer(args, data: Preprocessor):
 # This is code for multiple experiments
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    # args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
-    # args.weight_decay = trial.suggest_float('weight_decay', 0.000001, 0.001)
+    args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
 
-    model_desc = args.embedding_type + args.model_type
+    model_desc = str(args.negativity_score) + args.embedding_type + args.model_type
     print("model is :", model_desc)
-    seeds = [42]
+    seeds = [42, 43]
     scores = []
     for seed in seeds:
         setseed(seed=seed)
@@ -154,7 +154,7 @@ result_dict = {}
 # search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
 # sampler = GridSampler(search_space)
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=29)
+study.optimize(objective, n_trials=4)
 
 with open('results/temp.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
