@@ -39,7 +39,7 @@ class DataWrapper:
         ui_matrix = ui_matrix.astype(float)
         # 별점이 3 이상일 경우 1로 설정
         # 별점이 1 이상 3 미만일 경우 negativity score 부여
-        ui_matrix[(ui_matrix>0) & (ui_matrix < 3)]  = self.args.negativity_score
+        ui_matrix[ui_matrix < 3]  = 0
         ui_matrix[ui_matrix >= 3] = 1
         ui_matrix = ui_matrix.to_numpy().astype(float)
 

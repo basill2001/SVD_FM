@@ -48,7 +48,7 @@ parser.add_argument('--cont_dims', type=int, default=0,            help='continu
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
 parser.add_argument('--datatype', type=str, default="ml100k",      help='ml100k or ml1m or shopping or goodbook or frappe')
-parser.add_argument('--isuniform', type=bool, default=False,            help='true if uniform false if not')
+parser.add_argument('--isuniform', type=bool, default=True,            help='true if uniform false if not')
 parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
 parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
@@ -158,7 +158,7 @@ sampler = GridSampler(search_space)
 study = optuna.create_study(sampler=sampler)
 study.optimize(objective, n_trials=4)
 
-with open('notes/temp.pickle', mode='wb') as f:
+with open('results/temp.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
 
 # This is for one-time run

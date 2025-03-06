@@ -105,7 +105,7 @@ class Tester:
 
     def getter(self, result, customerid, cur_user_df, train_org):
         topidx = torch.argsort(result, descending=True)[:].tolist()
-        ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique()))
+        ml = self.le_dict['item_id'].inverse_transform(cur_user_df['item_id'].unique())
         ml = ml[topidx]
 
         cur_user_list = np.array(train_org[(train_org['user_id'])==self.le_dict['user_id'].transform([customerid])[0]]['item_id'].unique())
