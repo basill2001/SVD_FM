@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
-parser.add_argument('--num_epochs_training', type=int, default=100,  help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=3,  help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2,      help='Number of deep layers')
@@ -53,6 +53,7 @@ parser.add_argument('--sparse', type=str, default='',                   help='if
 parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
 parser.add_argument('--negativity_score', type=float, default=0,        help='score for ratings between 1~3')
+parser.add_argument('--x_track', type=list, default=[])
 
 args = parser.parse_args("")
 
@@ -124,57 +125,59 @@ def trainer(args, data: Preprocessor):
     return model, end-start
 
 # This is code for multiple experiments
-def objective(trial: optuna.trial.Trial) :
-    args = parser.parse_args("")
-    args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
+# def objective(trial: optuna.trial.Trial) :
+#     args = parser.parse_args("")
+#     args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
 
-    model_desc = str(args.negativity_score) + args.embedding_type + args.model_type
-    print("model is :", model_desc)
-    seeds = [42, 43]
-    scores = []
-    for seed in seeds:
-        setseed(seed=seed)
-        data_info = getdata(args)
+#     model_desc = str(args.negativity_score) + args.embedding_type + args.model_type
+#     print("model is :", model_desc)
+#     seeds = [42, 43]
+#     scores = []
+#     for seed in seeds:
+#         setseed(seed=seed)
+#         data_info = getdata(args)
 
-        model, timeee = trainer(args, data_info)
-        tester = Tester(args, model, data_info)
+#         model, timeee = trainer(args, data_info)
+#         tester = Tester(args, model, data_info)
 
-        result = tester.test()
-        # result['exp_var'] = args.explained_variance_ratio
-        # result['const_err'] = args.construction_err
+#         result = tester.test()
+#         # result['exp_var'] = args.explained_variance_ratio
+#         # result['const_err'] = args.construction_err
 
-        global result_dict
-        result_dict = result_checker(result_dict, result, model_desc)
-        scores.append(result['precision'])
+#         global result_dict
+#         result_dict = result_checker(result_dict, result, model_desc)
+#         scores.append(result['precision'])
 
-    return np.mean(result['precision'])
+#     return np.mean(result['precision'])
 
-result_dict = {}
+# result_dict = {}
 
-# search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
-# sampler = GridSampler(search_space)
-study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=4)
+# # search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
+# # sampler = GridSampler(search_space)
+# study = optuna.create_study(direction='maximize')
+# study.optimize(objective, n_trials=4)
 
-with open('results/temp.pickle', mode='wb') as f:
-    pickle.dump(result_dict, f)
+# with open('results/temp.pickle', mode='wb') as f:
+#     pickle.dump(result_dict, f)
 
 # This is for one-time run
-# if __name__=='__main__':
-#     setseed(seed=42)
-#     args = parser.parse_args("")
-#     results = {}
-#     data_info = getdata(args)
+if __name__=='__main__':
+    setseed(seed=42)
+    args = parser.parse_args("")
+    results = {}
+    data_info = getdata(args)
 
-#     print('model type is', args.model_type)
-#     print('embedding type is', args.embedding_type)
-#     model, timeee = trainer(args, data_info)
-#     test_time = time.time()
-#     tester = Tester(args, model, data_info)
+    print('model type is', args.model_type)
+    print('embedding type is', args.embedding_type)
+    model, timeee = trainer(args, data_info)
+    test_time = time.time()
+    tester = Tester(args, model, data_info)
 
-#     result = tester.test()
+    result = tester.test()
 
-#     end_test_time = time.time()
-#     results[args.sparse + args.embedding_type + args.model_type] = result
-#     print(results)
-#     print("time :", timeee)
+    end_test_time = time.time()
+    results[args.sparse + args.embedding_type + args.model_type] = result
+    with open('./results/x_track.pickle', mode='wb') as f:
+        pickle.dump(args.x_track, f)
+    print(results)
+    print("time :", timeee)

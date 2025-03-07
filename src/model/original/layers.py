@@ -46,13 +46,14 @@ class FM_Linear(nn.Module):
         self.offsets = np.array((0, *np.cumsum(field_dims)[:-1]), dtype=np.int64)
         self.args = args
     
-    def forward(self, x, x_cont):
+    def forward(self, x, x_cont, args):
         x = x + x.new_tensor(self.offsets).unsqueeze(0)
         linear_term = self.linear(x)
         cont_linear = torch.matmul(x_cont, self.w).reshape(-1, 1) # add continuous features
         
         x = torch.sum(linear_term, dim=1) + self.bias
         x = x + cont_linear 
+        args.x_track.append(x)
         return x
 
 class FM_Interaction(nn.Module):
