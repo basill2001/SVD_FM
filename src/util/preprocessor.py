@@ -51,17 +51,17 @@ class Preprocessor:
         ns_sampled_df = ns_sampled_df.merge(item_info, on='item_id', how='left')
         ns_sampled_df = ns_sampled_df.merge(user_info, on='user_id', how='left')
         
-        
-        # ui_matrix를 user_embedding, item_embedding으로 SVD를 이용하여 행렬 분해
-        if self.args.embedding_type=='SVD' or self.args.embedding_type=='original':
-            user_embedding, item_embedding  = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
-        elif self.args.embedding_type=='SparseSVD':
-            user_embedding, item_embedding = embed_SparseSVD(self.args).fit_sparse_svd(self.ui_matrix)
-        else:
-            user_embedding, item_embedding = embed_NMF(self.args).fit_nmf(self.ui_matrix)
-    
-        self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(user_embedding, item_embedding, ns_sampled_df)
-
+        # ui_matrix를 user_embedding, item_embedding으로 행렬 분해
+        # if self.args.embedding_type=='original':
+        #     self.train_df = ns_sampled_df.reset_index(drop=True)
+        if True:
+            if self.args.embedding_type=='SVD' or self.args.embedding_type=='original':
+                user_embedding, item_embedding  = embed_SVD(self.args).fit_truncatedSVD(self.ui_matrix)
+            elif self.args.embedding_type=='SparseSVD':
+                user_embedding, item_embedding = embed_SparseSVD(self.args).fit_sparse_svd(self.ui_matrix)
+            else:
+                user_embedding, item_embedding = embed_NMF(self.args).fit_nmf(self.ui_matrix)
+            self.train_df, self.user_embedding_df, self.item_embedding_df = self.merge_embedding(user_embedding, item_embedding, ns_sampled_df)
     
     def merge_embedding(self, user_embedding, item_embedding, ns_sampled_df):
         user_ids = pd.Series(sorted(ns_sampled_df['user_id'].unique()))
