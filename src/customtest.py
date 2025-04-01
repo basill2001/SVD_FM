@@ -35,7 +35,7 @@ class Tester:
         for col in self.cat_cols:
             final_df[col] = self.le_dict[col].transform(final_df[col]) # 각 label encoder을 이용해 transform
         
-        if self.args.embedding_type=='SVD' or self.args.embedding_type=='NMF': # embedding type이 SVD면 user_id와 item_id도 transform시켜줌
+        if self.args.embedding_type!='original': # embedding type이 SVD면 user_id와 item_id도 transform시켜줌
             final_df['user_id'] = self.le_dict['user_id'].transform(final_df['user_id'])
             final_df['item_id'] = self.le_dict['item_id'].transform(final_df['item_id'])
 

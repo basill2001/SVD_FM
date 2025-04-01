@@ -30,7 +30,6 @@ class DeepFM(pl.LightningModule):
         mse = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * mse
         loss_y = weighted_bce.mean()
-
         return loss_y
     
     def forward(self, x, x_cont):

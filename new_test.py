@@ -17,7 +17,6 @@ from src.customtest import Tester
 from src.util.preprocessor import Preprocessor
 
 import optuna
-from optuna.samplers import GridSampler
 import pickle
 import numpy as np
 import random
@@ -30,7 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train_ratio', type=float, default=0.7,      help='training ratio for any dataset')
 parser.add_argument('--lr', type=float, default=0.001,             help='Learning rate for fm training')
 parser.add_argument('--weight_decay', type=float, default=0.00001, help='Weight decay(for both FM and autoencoder)')
-parser.add_argument('--num_epochs_training', type=int, default=100,  help='Number of epochs')
+parser.add_argument('--num_epochs_training', type=int, default=100,help='Number of epochs')
 parser.add_argument('--batch_size', type=int, default=4096,        help='Batch size')
 parser.add_argument('--num_workers', type=int, default=10,         help='Number of workers for dataloader')
 parser.add_argument('--num_deep_layers', type=int, default=2,      help='Number of deep layers')
@@ -49,9 +48,9 @@ parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of
 
 parser.add_argument('--datatype', type=str, default="ml100k",           help='ml100k or ml1m or shopping or goodbook or frappe')
 parser.add_argument('--isuniform', type=bool, default=True,             help='true if uniform false if not')
-parser.add_argument('--sparse', type=str, default='',                   help='if user_embedding and item_embedding matrices are sparse or not')
-parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
-parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
+parser.add_argument('--sparsity', type=int, default=1,                help='sparsity control param')
+parser.add_argument('--embedding_type', type=str, default='SparseSVD',   help='SVD or NMF or original')
+parser.add_argument('--model_type', type=str, default='deepfm',             help='fm or deepfm')
 parser.add_argument('--negativity_score', type=float, default=0,        help='score for ratings between 1~3')
 
 args = parser.parse_args("")
@@ -74,10 +73,12 @@ def result_checker(result_dict: dict, result: dict, model_desc: str):
     return result_dict
 
 def getdata(args):
+    
     # get dataset
     dataset = DataWrapper(args)
     train_df, test, item_info, user_info, ui_matrix = dataset.get_data()
     cat_cols, cont_cols = dataset.get_col_type()
+    
     # preprocessor is a class that preprocesses dataframes and returns
     preprocessor = Preprocessor(args, train_df, test, user_info, item_info, ui_matrix, cat_cols, cont_cols)
 
@@ -100,13 +101,13 @@ def trainer(args, data: Preprocessor):
         model = DeepFM(args, field_dims)
         Dataset = CustomDataLoader(cats, conts, target, c)
 
-    elif args.model_type=='fm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
+    elif args.model_type=='fm':
         model = FMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
         Dataset = SVDDataloader(cats, embs, uidf, conts, target, c)
 
-    elif args.model_type=='deepfm' and (args.embedding_type=='SVD' or args.embedding_type=='NMF'):
+    elif args.model_type=='deepfm':
         model = DeepFMSVD(args, field_dims)
         embs = conts[:, -args.num_eigenvector*2:]   # Here, numeighenvector*2 refers to embeddings for both user and item
         conts = conts[:, :-args.num_eigenvector*2]  # rest of the columns are continuous columns (e.g. age, , etc.)
@@ -126,11 +127,11 @@ def trainer(args, data: Preprocessor):
 # This is code for multiple experiments
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
+    args.sparsity = trial.suggest_int('sparsity', low=1, high=20)
 
-    model_desc = str(args.negativity_score) + args.embedding_type + args.model_type
+    model_desc = str(args.sparsity) + args.embedding_type + args.model_type
     print("model is :", model_desc)
-    seeds = [42, 43]
+    seeds = [42, 43, 44, 45, 46]
     scores = []
     for seed in seeds:
         setseed(seed=seed)
@@ -140,8 +141,6 @@ def objective(trial: optuna.trial.Trial) :
         tester = Tester(args, model, data_info)
 
         result = tester.test()
-        # result['exp_var'] = args.explained_variance_ratio
-        # result['const_err'] = args.construction_err
 
         global result_dict
         result_dict = result_checker(result_dict, result, model_desc)
@@ -154,12 +153,12 @@ result_dict = {}
 # search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
 # sampler = GridSampler(search_space)
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=4)
+study.optimize(objective, n_trials=30)
 
-with open('results/temp.pickle', mode='wb') as f:
+with open('results/sparseSVD_deepfm.pickle', mode='wb') as f:
     pickle.dump(result_dict, f)
 
-# This is for one-time run
+# # This is for one-time run
 # if __name__=='__main__':
 #     setseed(seed=42)
 #     args = parser.parse_args("")
@@ -175,6 +174,6 @@ with open('results/temp.pickle', mode='wb') as f:
 #     result = tester.test()
 
 #     end_test_time = time.time()
-#     results[args.sparse + args.embedding_type + args.model_type] = result
+#     results[str(args.sparsity) + args.embedding_type + args.model_type] = result
 #     print(results)
 #     print("time :", timeee)

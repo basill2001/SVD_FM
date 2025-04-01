@@ -49,18 +49,19 @@ Settings : `num_epochs = 100`, `data=goodbook`
 
 ## 3. SVD, FM
 Settings :`num_epochs = 100`, `data=ml100k`  
-|metrics |value |value<sup>[1](#footnote_1)</sup> |
-|---|---|---|
-|precision|0.198165137614678 |0.201376146788990 |
-|recall   |0.026636492888923 |0.027525045805599 |
-|hit rate |0.550458715596330 |0.548165137614678 |
-|rec rank |0.371292048929663 |0.394571865443425 |
-|dcg      |0.631741929379093 |0.663941525467433 |
-|exp_var  |0.319258351509169 |0.319258351509169 | 
-|const err|6.433065941228768 |6.433065941228768 |
-|time     |104.9781436920166 |
+|metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |
+|---|---|---|---|
+|precision|0.198165137614678 |0.201376146788990 |0.2490825688073394 |
+|recall   |0.026636492888923 |0.027525045805599 |0.0301064695525713 |
+|hit rate |0.550458715596330 |0.548165137614678 |0.5825688073394495 |
+|rec rank |0.371292048929663 |0.394571865443425 |0.4001911314984709 |
+|dcg      |0.631741929379093 |0.663941525467433 |0.7704727808198837 |
+|exp_var  |0.319258351509169 |0.319258351509169 |                   |
+|const err|6.433065941228768 |6.433065941228768 |                   |
+|time     |104.9781436920166 |                  |105.16335678100586 |
 ---
 <a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample  
+<a name='footnote_2'>2</a> : `SparseSVD`를 사용, 이때 `sparsity` i.e. `alpha`는 1로 고정
 
 Settings : `num_epochs = 100`, `data=goodbook`  
 |metrics |value |
@@ -90,14 +91,16 @@ Settings : `num_epochs = 100`, `data=ml100k`
 
 ## 4. SVD, DeepFM
 Settings : `num_epochs = 100`, `data=ml100k`  
-|metrics |value |
-|---|---|
-|precision|0.5279816513761467 |
-|recall   |0.0967468529122231 |
-|hit rate |0.9197247706422018 |
-|rec rank |0.7345565749235473 |
-|dcg      |1.6030452903462624 |
-|time     |139.4771749973297  |
+|metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |
+|---|---|---|---|
+|precision|0.5279816513761467 |0.4857798165137615 |0.468349	|
+|recall   |0.0967468529122231 |0.0838822768972341 |0.079619	|
+|hit rate |0.9197247706422018 |0.8876146788990825 |0.874312 |
+|rec rank |0.7345565749235473 |0.6909403669724771 |0.677080 |
+|dcg      |1.6030452903462624 |1.4827439130712168 |         |
+|time     |139.4771749973297  |106.86286878585815 |         |
+---
+<a name='footnote_1'>1</a> : `SparseSVD`를 사용, 이때 `sparsity` i.e. `alpha`는 1로 고정  
 
 Settings : `num_epochs = 100`, `data=ml1m`  
 |metrics |value |
