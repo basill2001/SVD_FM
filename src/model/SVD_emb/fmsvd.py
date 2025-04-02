@@ -24,7 +24,7 @@ class FMSVD(pl.LightningModule):
         # calculate weighted mse with l2 regularization
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
-        loss_y = weighted_bce.mean() + self.l2norm()
+        loss_y = weighted_bce.mean()
         return loss_y 
     
     def forward(self, x, emb_x, svd_emb, x_cont):
@@ -43,7 +43,7 @@ class FMSVD(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         x, svd_emb, ui, x_cont, y, c_values = batch
         embed_x = self.embedding(x)
-        y_pred, _, _, _ = self.forward(x, embed_x, svd_emb, x_cont)
+        y_pred, _, _, _ = self.forward(x=x, emb_x=embed_x, svd_emb=svd_emb, x_cont=x_cont)
         loss_y = self.loss(y_pred, y, c_values)
         self.log('train_loss', loss_y, on_step=True, on_epoch=True, prog_bar=True, logger=True)
         return loss_y
