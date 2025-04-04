@@ -9,16 +9,16 @@ import pytorch_lightning as pl
 class FMSVD(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(FMSVD, self).__init__()
-
+        self.lr = args.lr
+        self.args = args
+        self.sig = nn.Sigmoid()
+        self.last_linear = nn.Linear(2, 1)
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
         self.bceloss = nn.BCEWithLogitsLoss()
-        self.lr = args.lr
-        self.args = args
-        self.sig = nn.Sigmoid()
-        self.last_linear = nn.Linear(2, 1)
+        
 
     def l2norm(self):
         reg = 0

@@ -45,7 +45,7 @@ class DeepFMSVD(pl.LightningModule):
     def loss(self, y_pred, y_true, c_values):
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
-        loss_y = weighted_bce.mean()
+        loss_y = weighted_bce.mean() + self.l2norm()
         return loss_y
     
 
@@ -85,5 +85,5 @@ class DeepFMSVD(pl.LightningModule):
         return loss_y
     
     def configure_optimizers(self) -> Any:
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.args.weight_decay)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
