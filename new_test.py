@@ -125,7 +125,7 @@ def trainer(args, data: Preprocessor):
 # This is code for multiple experiments
 def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
-    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD'])
+    args.embedding_type = trial.suggest_categorical('embedding_type', ['SVD'])
     args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
 
     model_desc = args.embedding_type + args.model_type
@@ -149,10 +149,10 @@ def objective(trial: optuna.trial.Trial) :
 
 result_dict = {}
 
-search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
+search_space = {'embedding_type' : ['SVD'], 'model_type' : ['fm', 'deepfm']}
 sampler = GridSampler(search_space)
 study = optuna.create_study(sampler=sampler)
-study.optimize(objective, n_trials=4)
+study.optimize(objective, n_trials=2)
 
 # with open('results/sparseSVD_deepfm.pickle', mode='wb') as f:
 #     pickle.dump(result_dict, f)
