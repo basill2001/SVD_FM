@@ -127,7 +127,7 @@ def objective(trial: optuna.trial.Trial) :
     args = parser.parse_args("")
     # args.negativity_score = trial.suggest_float('negativity_score', low=-1, high=0)
     # args.weight_decay = trial.suggest_float('weight_decay', 0.000001, 0.001)
-    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD'])
+    args.embedding_type = trial.suggest_categorical('embedding_type', ['SVD'])
     args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
 
     model_desc = args.embedding_type + args.model_type
@@ -149,17 +149,17 @@ def objective(trial: optuna.trial.Trial) :
         result_dict = result_checker(result_dict, result, model_desc)
         scores.append(result['precision'])
 
-    return 0
+    return result['precision']
 
 result_dict = {}
 
-search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
+search_space = {'embedding_type' : ['SVD'], 'model_type' : ['fm', 'deepfm']}
 sampler = GridSampler(search_space)
 study = optuna.create_study(sampler=sampler)
-study.optimize(objective, n_trials=4)
+study.optimize(objective, n_trials=2)
 
-with open('notes/temp.pickle', mode='wb') as f:
-    pickle.dump(result_dict, f)
+# with open('notes/temp.pickle', mode='wb') as f:
+#     pickle.dump(result_dict, f)
 
 # This is for one-time run
 # if __name__=='__main__':
