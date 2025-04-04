@@ -28,9 +28,9 @@ class Tester:
         test_df = pd.DataFrame({"user_id" : user_ids, "item_id" : item_ids})
         test_df = pd.merge(test_df, self.item_df, on='item_id', how='left')
         test_df = pd.merge(test_df, self.user_df, on='user_id', how='left')
-        if self.args.embedding_type!='original':
-            test_df = pd.merge(test_df.set_index('item_id'), self.item_embedding, on='item_id', how='left')
-            test_df = pd.merge(test_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
+        # if self.args.embedding_type!='original':
+            # test_df = pd.merge(test_df.set_index('item_id'), self.item_embedding, on='item_id', how='left')
+            # test_df = pd.merge(test_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
 
         final_df = test_df
 
@@ -38,6 +38,8 @@ class Tester:
             final_df[col] = self.le_dict[col].transform(final_df[col]) # 각 label encoder을 이용해 transform
         
         if self.args.embedding_type!='original': # embedding type이 SVD면 user_id와 item_id도 transform시켜줌
+            final_df = pd.merge(final_df.set_index('item_id'), self.item_embedding, on='item_id', how='left')
+            final_df = pd.merge(final_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
             final_df['user_id'] = self.le_dict['user_id'].transform(final_df['user_id'])
             final_df['item_id'] = self.le_dict['item_id'].transform(final_df['item_id'])
 

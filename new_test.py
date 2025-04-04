@@ -145,7 +145,7 @@ def objective(trial: optuna.trial.Trial) :
         result_dict = result_checker(result_dict, result, model_desc)
         scores.append(result['precision'])
 
-    return 0
+    return result['precision']
 
 result_dict = {}
 
@@ -153,6 +153,10 @@ search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'd
 sampler = GridSampler(search_space)
 study = optuna.create_study(sampler=sampler)
 study.optimize(objective, n_trials=4)
+
+for models in result_dict.keys():
+    print(models)
+    print(result_dict[models])
 
 # with open('results/sparseSVD_deepfm.pickle', mode='wb') as f:
 #     pickle.dump(result_dict, f)
