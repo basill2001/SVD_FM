@@ -28,9 +28,6 @@ class Tester:
         test_df = pd.DataFrame({"user_id" : user_ids, "item_id" : item_ids})
         test_df = pd.merge(test_df, self.item_df, on='item_id', how='left')
         test_df = pd.merge(test_df, self.user_df, on='user_id', how='left')
-        # if self.args.embedding_type!='original':
-            # test_df = pd.merge(test_df.set_index('item_id'), self.item_embedding, on='item_id', how='left')
-            # test_df = pd.merge(test_df.set_index('user_id'), self.user_embedding, on='user_id', how='left')
 
         final_df = test_df
 
