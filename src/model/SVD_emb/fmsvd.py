@@ -18,23 +18,13 @@ class FMSVD(pl.LightningModule):
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
         self.bceloss = nn.BCEWithLogitsLoss()
-        
 
-    def l2norm(self):
-        reg = 0
-        for param in self.linear.parameters():
-            reg += torch.norm(param)**2
-        for param in self.embedding.parameters():
-            reg += torch.norm(param)**2
-        for param in self.interaction.parameters():
-            reg += torch.norm(param)**2
-        return reg * self.args.weight_decay
 
     def loss(self, y_pred, y_true,c_values):
         # calculate weighted mse with l2 regularization
         bce = self.bceloss(y_pred, y_true.float())
         weighted_bce = c_values * bce
-        loss_y = weighted_bce.mean() + self.l2norm()
+        loss_y = weighted_bce.mean()
         return loss_y
     
     def forward(self, x, emb_x, svd_emb, x_cont):
@@ -59,5 +49,5 @@ class FMSVD(pl.LightningModule):
         return loss_y
     
     def configure_optimizers(self) ->Any:
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr, weight_decay=self.args.weight_decay)
         return optimizer

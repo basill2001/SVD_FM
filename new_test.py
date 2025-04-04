@@ -156,7 +156,7 @@ study.optimize(objective, n_trials=4)
 
 for models in result_dict.keys():
     print(models)
-    print(result_dict[models])
+    print(result_dict[models]['precision'])
 
 # with open('results/sparseSVD_deepfm.pickle', mode='wb') as f:
 #     pickle.dump(result_dict, f)

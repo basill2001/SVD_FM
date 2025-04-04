@@ -23,10 +23,3 @@ class embed_SparseSVD:
         v = pca2.components_
 
         return u.T, v.T
-
-    # def fit_truncatedSVD(self, x):
-    #     truncsvd = TruncatedSVD(n_components=self.args.num_eigenvector)
-    #     u = truncsvd.fit_transform(x)
-    #     v = truncsvd.components_
-
-    #     return u, v.T
