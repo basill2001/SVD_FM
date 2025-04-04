@@ -1,5 +1,6 @@
-## 1. original, FM
-Settings : `num_epochs = 100`, `data=ml100k`  
+특별히 명시되지 않으면 `num_epochs=100`, `data=ml100k`가 기본
+
+## 1. original, FM 
 |metrics |value |value<sup>[1](#footnote_1)</sup> |
 |---|---|---|
 |precision|0.444954128440366 |0.450000000000000 |
@@ -11,7 +12,8 @@ Settings : `num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용  
 
-Settings : `num_epochs = 100`, `data=goodbook`  
+<details><summary>GoodBook</summary>
+
 |metrics |value |
 |---|---|
 |precision|0.002744338749052 |
@@ -22,9 +24,9 @@ Settings : `num_epochs = 100`, `data=goodbook`
 |exp_var  |0.103176519270626 |
 |time     |4482.333681344986 |
 
+</details>
 
 ## 2. original, DeepFM
-Settings : `num_epochs = 100`, `data=ml100k`  
 |metrics |value |value<sup>[1](#footnote_1)</sup> |
 |---|---|---|
 |precision|0.435779816513761 |0.456880733944954 |
@@ -36,7 +38,8 @@ Settings : `num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : `L2-norm`을 명시적으로 더하는 대신 `weight_decay` 사용
 
-Settings : `num_epochs = 100`, `data=goodbook`  
+<details><summary>GoodBook</summary>
+
 |metrics |value |
 |---|---|
 |precision|0.393299099250778 |
@@ -46,9 +49,9 @@ Settings : `num_epochs = 100`, `data=goodbook`
 |dcg      |1.213845092514998 |
 |exp_var  |0.103176519270626 |
 |time     |3065.868867158889 |
+</details>
 
 ## 3. SVD, FM
-Settings :`num_epochs = 100`, `data=ml100k`  
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |
 |---|---|---|---|
 |precision|0.198165137614678 |0.201376146788990 |0.2490825688073394 |
@@ -62,8 +65,9 @@ Settings :`num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : `isuniform`을 `True`로 사용 i.e. complete random negative sample  
 <a name='footnote_2'>2</a> : `SparseSVD`를 사용, 이때 `sparsity` i.e. `alpha`는 1로 고정
+ 
+<details><summary>GoodBook</summary>
 
-Settings : `num_epochs = 100`, `data=goodbook`  
 |metrics |value |
 |---|---|
 |precision|0.214883407694250 |
@@ -73,10 +77,9 @@ Settings : `num_epochs = 100`, `data=goodbook`
 |dcg      |0.627133449344527 |
 |exp_var  |0.103176519270626 |
 |time     |3452.502673149109 |
-
+</details>
 
 ## 3-1. NMF, FM
-Settings : `num_epochs = 100`, `data=ml100k`
 |metrics |value |value<sup>[1](#footnote_1)</sup> |
 |---|---|---|
 |precision |0.2628440366972477 |0.286238532110091 |
@@ -89,8 +92,7 @@ Settings : `num_epochs = 100`, `data=ml100k`
 기존에는 `nndsvda`가 쓰임  
 <a name='footnote_1'>1</a> : NMF의 `init`을 `nndsvd`로
 
-## 4. SVD, DeepFM
-Settings : `num_epochs = 100`, `data=ml100k`  
+## 4. SVD, DeepFM 
 |metrics |value |value<sup>[1](#footnote_1)</sup> |
 |---|---|---|
 |precision|0.5279816513761467 |0.4857798165137615 |
@@ -102,7 +104,8 @@ Settings : `num_epochs = 100`, `data=ml100k`
 ---
 <a name='footnote_1'>1</a> : `SparseSVD`를 사용, 이때 `sparsity` i.e. `alpha`는 1로 고정  
 
-Settings : `num_epochs = 100`, `data=ml1m`  
+<details><summary>MovieLens1m</summary>
+
 |metrics |value |
 |---|---|
 |precision|0.18105960264900 |
@@ -111,8 +114,10 @@ Settings : `num_epochs = 100`, `data=ml1m`
 |rec rank |0.30680187637969 |
 |dcg      |0.54466047580628 |
 |time     |970.119738817215 |
+</details>
 
-Settings : `num_epochs = 100`, `data=goodbook`  
+<details><summary>GoodBook</summary>
+ 
 |metrics |value |
 |---|---|
 |precision|0.477767488845862 |
@@ -123,9 +128,9 @@ Settings : `num_epochs = 100`, `data=goodbook`
 |exp_var  |0.103176519270626 |
 |const err|8.125652967151472 |
 |time     |3519.840175390243 |
+</details>
 
 ## 4-1. NMF, DeepFM
-Settings : `num_epochs = 100`, `data=ml100k`
 |metrics |value |value<sup>[1](#footnote_1)</sup> |value<sup>[2](#footnote_2)</sup> |
 |---|---|---|---|
 |precision |0.522477064220183 |0.501376146788990 |0.536697247706422 |
