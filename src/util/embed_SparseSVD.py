@@ -13,12 +13,12 @@ class embed_SparseSVD:
         """
         print("pca 1 start")
         pca1 = MiniBatchSparsePCA(n_components=self.args.num_eigenvector, 
-                                  alpha=self.args.sparsity, batch_size=100)
+                                  alpha=1, batch_size=100)
         pca1.fit(x@x.T)
         u = pca1.components_
         print("pca 2 start")
         pca2 = MiniBatchSparsePCA(n_components=self.args.num_eigenvector, 
-                                  alpha=self.args.sparsity, batch_size=100)
+                                  alpha=1, batch_size=100)
         pca2.fit(x.T@x)
         v = pca2.components_
 

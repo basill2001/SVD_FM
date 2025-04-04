@@ -17,7 +17,7 @@ from src.customtest import Tester
 from src.util.preprocessor import Preprocessor
 
 import optuna
-import pickle
+from optuna.samplers import GridSampler
 import numpy as np
 import random
 import torch
@@ -47,11 +47,9 @@ parser.add_argument('--cont_dims', type=int, default=0,            help='continu
 parser.add_argument('--shopping_file_num', type=int, default=147,  help='name of shopping file choose from 147 or  148 or 149')
 
 parser.add_argument('--datatype', type=str, default="ml100k",           help='ml100k or ml1m or shopping or goodbook or frappe')
-parser.add_argument('--isuniform', type=bool, default=True,             help='true if uniform false if not')
-parser.add_argument('--sparsity', type=int, default=1,                help='sparsity control param')
+parser.add_argument('--isuniform', type=bool, default=False,             help='true if uniform false if not')
 parser.add_argument('--embedding_type', type=str, default='original',   help='SVD or NMF or original')
 parser.add_argument('--model_type', type=str, default='fm',             help='fm or deepfm')
-parser.add_argument('--negativity_score', type=float, default=0,        help='score for ratings between 1~3')
 
 args = parser.parse_args("")
 
@@ -125,55 +123,56 @@ def trainer(args, data: Preprocessor):
     return model, end-start
 
 # This is code for multiple experiments
-# def objective(trial: optuna.trial.Trial) :
-#     args = parser.parse_args("")
-#     args.sparsity = trial.suggest_int('sparsity', low=1, high=20)
+def objective(trial: optuna.trial.Trial) :
+    args = parser.parse_args("")
+    args.embedding_type = trial.suggest_categorical('embedding_type', ['original', 'SVD'])
+    args.model_type = trial.suggest_categorical('model_type', ['fm', 'deepfm'])
 
-#     model_desc = str(args.sparsity) + args.embedding_type + args.model_type
-#     print("model is :", model_desc)
-#     seeds = [42, 43, 44, 45, 46]
-#     scores = []
-#     for seed in seeds:
-#         setseed(seed=seed)
-#         data_info = getdata(args)
+    model_desc = args.embedding_type + args.model_type
+    print("model is :", model_desc)
+    seeds = [42]
+    scores = []
+    for seed in seeds:
+        setseed(seed=seed)
+        data_info = getdata(args)
 
-#         model, timeee = trainer(args, data_info)
-#         tester = Tester(args, model, data_info)
+        model, timeee = trainer(args, data_info)
+        tester = Tester(args, model, data_info)
 
-#         result = tester.test()
+        result = tester.test()
 
-#         global result_dict
-#         result_dict = result_checker(result_dict, result, model_desc)
-#         scores.append(result['precision'])
+        global result_dict
+        result_dict = result_checker(result_dict, result, model_desc)
+        scores.append(result['precision'])
 
-#     return np.mean(result['precision'])
+    return 0
 
-# result_dict = {}
+result_dict = {}
 
-# # search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
-# # sampler = GridSampler(search_space)
-# study = optuna.create_study(direction='maximize')
-# study.optimize(objective, n_trials=30)
+search_space = {'embedding_type' : ['original', 'SVD'], 'model_type' : ['fm', 'deepfm']}
+sampler = GridSampler(search_space)
+study = optuna.create_study(sampler=sampler)
+study.optimize(objective, n_trials=4)
 
 # with open('results/sparseSVD_deepfm.pickle', mode='wb') as f:
 #     pickle.dump(result_dict, f)
 
 # # This is for one-time run
-if __name__=='__main__':
-    setseed(seed=42)
-    args = parser.parse_args("")
-    results = {}
-    data_info = getdata(args)
+# if __name__=='__main__':
+#     setseed(seed=42)
+#     args = parser.parse_args("")
+#     results = {}
+#     data_info = getdata(args)
 
-    print('model type is', args.model_type)
-    print('embedding type is', args.embedding_type)
-    model, timeee = trainer(args, data_info)
-    test_time = time.time()
-    tester = Tester(args, model, data_info)
+#     print('model type is', args.model_type)
+#     print('embedding type is', args.embedding_type)
+#     model, timeee = trainer(args, data_info)
+#     test_time = time.time()
+#     tester = Tester(args, model, data_info)
 
-    result = tester.test()
+#     result = tester.test()
 
-    end_test_time = time.time()
-    results[args.embedding_type + args.model_type] = result
-    print(results)
-    print("time :", timeee)
+#     end_test_time = time.time()
+#     results[args.embedding_type + args.model_type] = result
+#     print(results)
+#     print("time :", timeee)
