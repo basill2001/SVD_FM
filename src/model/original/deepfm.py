@@ -13,16 +13,17 @@ class DeepFM(pl.LightningModule):
         super(DeepFM, self).__init__()
         self.args = args
         self.lr = args.lr
+        
         self.field_dims = field_dims
         self.fm = FM(args, field_dims)
         self.embedding = FeatureEmbedding(args, field_dims)
-        self.embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
-        self.mlp = MLP(args, self.embed_output_dim)
-        self.bceloss = nn.BCEWithLogitsLoss()
-
+        
+        embed_output_dim = len(field_dims) * args.emb_dim + args.cont_dims * args.emb_dim
+        self.mlp = MLP(args, embed_output_dim)
         self.sig = nn.Sigmoid()
         self.lastlinear = nn.Linear(3,1)
-    
+        
+        self.bceloss = nn.BCEWithLogitsLoss()
     def deep_part(self, x):
         return self.mlp(x)
 
@@ -49,8 +50,8 @@ class DeepFM(pl.LightningModule):
         lin_term = self.sig(lin_term)
         inter_term = self.sig(inter_term)
         deep_part = self.sig(deep_part)
-        outs = torch.cat((lin_term,inter_term), 1)
-        outs = torch.cat((outs,deep_part), 1)
+        outs = torch.cat((lin_term, inter_term), 1)
+        outs = torch.cat((outs, deep_part), 1)
         y_pred = self.lastlinear(outs).squeeze(1)
 
         return y_pred

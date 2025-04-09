@@ -9,16 +9,20 @@ from itertools import chain
 class FM(pl.LightningModule):
     def __init__(self, args, field_dims):
         super(FM, self).__init__()
-
+        
+        # forward function
         if args.model_type=='fm':
             self.embedding = FeatureEmbedding(args, field_dims)
         self.linear = FM_Linear(args, field_dims)
         self.interaction = FM_Interaction(args)
-        self.bceloss = nn.BCEWithLogitsLoss() # since BCEWith logits is used, we don't need to add sigmoid layer in the end
-        self.lr = args.lr
-        self.args = args
         self.sig = nn.Sigmoid()
         self.last_linear = nn.Linear(2,1)
+
+        # loss function
+        self.bceloss = nn.BCEWithLogitsLoss() # since BCEWith logits is used, we don't need to add sigmoid layer in the end
+        
+        self.args = args
+        self.lr = args.lr
 
     def loss(self, y_pred, y_true, c_values):
         # calculate weighted bce with l2 regularization
